@@ -1,48 +1,28 @@
 export default function Home() {
   return (
     <main style={{
-      minHeight: "100vh",
-      background: "#000",
+      backgroundColor: "#000",
       color: "#D4AF37",
+      minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
-      alignItems: "center",
       justifyContent: "center",
+      alignItems: "center",
       textAlign: "center",
       padding: "20px"
     }}>
-
-      <img
-        src="/fracturelight.png"
-        alt="W.A.R. Network"
-        style={{
-          width: "120px",
-          marginBottom: "30px"
-        }}
-      />
-
-      <h1 style={{
-        fontSize: "28px",
-        letterSpacing: "2px",
-        marginBottom: "10px"
-      }}>
-        W.A.R. NETWORK
+      
+      <h1 style={{ fontSize: "40px", marginBottom: "10px" }}>
+        W.A.R. Network
       </h1>
 
-      <p style={{
-        fontSize: "14px",
-        marginBottom: "30px",
-        color: "#aaa"
-      }}>
+      <h2 style={{ fontSize: "22px", marginBottom: "20px" }}>
         WE’RE ALL RECOVERING
-      </p>
-
-      <h2 style={{
-        fontSize: "20px",
-        marginBottom: "20px"
-      }}>
-        THE NEW SOCIAL PLATFORM
       </h2>
+
+      <h3 style={{ fontSize: "18px", marginBottom: "20px" }}>
+        THE NEW SOCIAL PLATFORM
+      </h3>
 
       <p style={{
         fontSize: "14px",
