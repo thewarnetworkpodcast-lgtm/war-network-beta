@@ -35,7 +35,7 @@ export default function HomePage() {
             WE&apos;RE ALL RECOVERING
           </p>
 
-          <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-white/78">
+          <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-white/80">
             The new social platform for healing, rebuilding, discipline, and real
             connection.
           </p>
@@ -44,26 +44,10 @@ export default function HomePage() {
             <p className="text-lg font-semibold text-[#D4AF37]">
               Private rooms. Recovery Log. Member messaging.
             </p>
-            <p className="mt-3 text-base leading-7 text-white/68">
+            <p className="mt-3 text-base leading-7 text-white/70">
               Built for people who are done pretending and ready to rebuild for
               real.
             </p>
-          </div>
-
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <button
-              type="button"
-              className="rounded-full bg-[#D4AF37] px-8 py-4 text-base font-bold text-black transition hover:opacity-90"
-            >
-              Request Early Access
-            </button>
-
-            <button
-              type="button"
-              className="rounded-full border border-[#D4AF37]/35 px-8 py-4 text-base font-bold text-[#D4AF37] transition hover:bg-[#D4AF37]/10"
-            >
-              Explore the Vision
-            </button>
           </div>
         </div>
       </section>
