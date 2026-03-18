@@ -1,7 +1,20 @@
+import Image from "next/image";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-black flex items-center justify-center px-6 text-center">
       <div className="max-w-xl">
+
+        {/* LOGO */}
+        <div className="flex justify-center mb-6">
+          <Image
+            src="/fracturelight.png"
+            alt="W.A.R. Network Logo"
+            width={80}
+            height={80}
+            className="object-contain"
+          />
+        </div>
 
         <h1 className="text-4xl md:text-5xl font-bold text-yellow-500 mb-4">
           W.A.R. Network
@@ -30,7 +43,9 @@ export default function Home() {
         </div>
 
         <a
-          href="mailto:thewarnetworkpodcast@gmail.com?subject=W.A.R.%20Network%20Early%20Access&body=I%20want%20early%20access%20to%20the%20W.A.R.%20Network."
+          href="https://mail.google.com/mail/?view=cm&fs=1&to=thewarnetworkpodcast@gmail.com&su=W.A.R.%20Network%20Early%20Access&body=I%20want%20early%20access%20to%20the%20W.A.R.%20Network."
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-block bg-yellow-500 text-black font-semibold px-6 py-3 rounded-lg hover:bg-yellow-400 transition"
         >
           Request Early Access
