@@ -2,54 +2,55 @@ import Image from "next/image";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-black text-white">
-      <section className="mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center px-6 py-12">
-        <div className="w-full max-w-2xl text-center">
-          <div className="mx-auto mb-8 flex items-center justify-center">
-            <div className="relative flex items-center justify-center">
-              <div className="absolute h-56 w-56 rounded-full bg-[#D4AF37]/8 blur-3xl" />
-              <Image
-                src="/fracturelight.png"
-                alt="Fracturelight symbol"
-                width={180}
-                height={180}
-                priority
-                className="relative h-[150px] w-[150px] object-contain mix-blend-screen"
-              />
-            </div>
-          </div>
-
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.35em] text-[#D4AF37]/70">
-            Founding Member Alpha
-          </p>
-
-          <h1 className="text-5xl font-extrabold tracking-tight text-[#D4AF37] sm:text-6xl">
-            Welcome Home
-          </h1>
-
-          <p className="mt-4 text-2xl font-semibold text-white">
-            W.A.R. Network
-          </p>
-
-          <p className="mt-3 text-sm font-semibold uppercase tracking-[0.32em] text-[#D4AF37]">
-            WE&apos;RE ALL RECOVERING
-          </p>
-
-          <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-white/80">
-            The new social platform for healing, rebuilding, discipline, and real
-            connection.
-          </p>
-
-          <div className="mt-10 rounded-3xl border border-[#D4AF37]/25 bg-white/[0.03] px-6 py-6">
-            <p className="text-lg font-semibold text-[#D4AF37]">
-              Private rooms. Recovery Log. Member messaging.
-            </p>
-            <p className="mt-3 text-base leading-7 text-white/70">
-              Built for people who are done pretending and ready to rebuild for
-              real.
-            </p>
-          </div>
+    <main className="min-h-screen bg-black text-white flex items-center justify-center px-4 pt-10 pb-16">
+      <section className="w-full max-w-2xl text-center py-16">
+        
+        {/* LOGO */}
+        <div className="flex justify-center mb-6">
+          <Image
+            src="/fracturelight.png"
+            alt="Fracturelight symbol"
+            width={120}
+            height={120}
+            priority
+            className="object-contain"
+          />
         </div>
+
+        {/* TOP LABEL */}
+        <p className="text-[10px] tracking-[0.3em] text-[#D4AF37]/70 uppercase mb-2">
+          Founding Member Alpha
+        </p>
+
+        {/* TITLE */}
+        <h1 className="text-4xl sm:text-5xl font-bold text-[#D4AF37] leading-tight">
+          Welcome Home
+        </h1>
+
+        {/* BRAND */}
+        <p className="mt-3 text-lg font-semibold">
+          W.A.R. Network
+        </p>
+
+        <p className="text-[11px] tracking-[0.25em] text-[#D4AF37] uppercase mt-1">
+          We&apos;re All Recovering
+        </p>
+
+        {/* DESCRIPTION */}
+        <p className="mt-6 text-base text-white/80 leading-relaxed px-2">
+          The new social platform for healing, rebuilding, discipline, and real connection.
+        </p>
+
+        {/* FEATURE BOX */}
+        <div className="mt-8 border border-[#D4AF37]/20 rounded-xl p-5">
+          <p className="text-[#D4AF37] font-semibold text-sm">
+            Private rooms. Recovery Log. Member messaging.
+          </p>
+          <p className="text-white/70 text-sm mt-2 leading-relaxed">
+            Built for people who are done pretending and ready to rebuild for real.
+          </p>
+        </div>
+
       </section>
     </main>
   );
