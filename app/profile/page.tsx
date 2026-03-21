@@ -19,7 +19,7 @@ type Friend = {
 };
 
 export default function ProfilePage() {
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState<string>("");
   const [profileName, setProfileName] = useState("Your Name");
   const [profileBio, setProfileBio] = useState(
     "This is your space. Build your identity. Share your story."
@@ -91,6 +91,37 @@ export default function ProfilePage() {
     }
   }
 
+  async function acceptFriendRequest(requestId: string, senderId: string) {
+    try {
+      await supabase
+        .from("friend_requests")
+        .update({ status: "accepted" })
+        .eq("id", requestId);
+
+      await supabase.from("friends").insert([
+        { user_id: userId, friend_id: senderId },
+        { user_id: senderId, friend_id: userId },
+      ]);
+
+      await loadProfilePage();
+    } catch (error) {
+      console.error("Accept failed:", error);
+    }
+  }
+
+  async function declineFriendRequest(requestId: string) {
+    try {
+      await supabase
+        .from("friend_requests")
+        .update({ status: "declined" })
+        .eq("id", requestId);
+
+      await loadProfilePage();
+    } catch (error) {
+      console.error("Decline failed:", error);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#0b0b0b] px-4 py-10 pb-24 text-white">
       <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
@@ -151,10 +182,18 @@ export default function ProfilePage() {
                 </p>
 
                 <div className="flex gap-2">
-                  <button className="rounded-lg bg-[#D4AF37] px-3 py-1 text-sm text-black">
+                  <button
+                    onClick={() =>
+                      acceptFriendRequest(req.id, req.sender_id)
+                    }
+                    className="rounded-lg bg-[#D4AF37] px-3 py-1 text-sm text-black"
+                  >
                     Accept
                   </button>
-                  <button className="rounded-lg border border-white/20 px-3 py-1 text-sm text-white/70">
+                  <button
+                    onClick={() => declineFriendRequest(req.id)}
+                    className="rounded-lg border border-white/20 px-3 py-1 text-sm text-white/70"
+                  >
                     Decline
                   </button>
                 </div>
