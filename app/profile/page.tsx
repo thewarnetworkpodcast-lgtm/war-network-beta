@@ -3,57 +3,48 @@
 export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-black px-4 pb-24 pt-8 text-white">
-      <div className="mx-auto flex w-full max-w-md flex-col gap-5">
-        
-        {/* HEADER */}
+      <div className="mx-auto flex w-full max-w-md flex-col gap-6">
+
+        {/* PROFILE CARD */}
         <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-6">
+
           <div className="flex flex-col items-center text-center">
-            
-            {/* LOGO */}
+
+            {/* PROFILE IMAGE */}
             <img
               src="/fracturelight.png"
-              alt="Fracturelight"
-              className="mb-5 h-32 w-32 object-contain mix-blend-screen"
+              alt="Profile"
+              className="h-28 w-28 rounded-full object-cover border border-[#D4AF37]/30"
             />
 
-            {/* TITLE */}
-            <p className="text-[11px] uppercase tracking-[0.25em] text-[#D4AF37]">
-              W.A.R. NETWORK ALPHA
+            {/* USERNAME */}
+            <h1 className="mt-4 text-2xl font-semibold">
+              Your Name
+            </h1>
+
+            {/* BIO */}
+            <p className="mt-2 text-sm text-white/70">
+              This is your space. Build your identity. Share your story.
             </p>
 
+            {/* FRIEND COUNT */}
+            <div className="mt-4 text-sm text-[#D4AF37]">
+              0 Friends
+            </div>
+
+            {/* EDIT BUTTON */}
+            <button className="mt-5 rounded-xl border border-[#D4AF37]/30 px-5 py-2 text-sm text-[#D4AF37] hover:bg-[#D4AF37]/10">
+              Edit Profile
+            </button>
+
           </div>
         </div>
 
-        {/* STATUS TEXT */}
-        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-6">
-          <p className="text-center text-lg leading-8 text-white/90">
-            Founding Member access is live. Full profile customization is being finalized for the public rollout.
-          </p>
-        </div>
-
-        {/* LIVE SECTION */}
+        {/* FUTURE SECTION */}
         <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-5">
-          <p className="text-base font-semibold text-[#D4AF37] text-left">
-            What's Live Right Now
+          <p className="text-sm text-white/70 text-center">
+            Your activity, posts, and recovery journey will appear here.
           </p>
-
-          <div className="mt-4 flex flex-col gap-3 text-sm text-white/85">
-            <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3">
-              Community Feed is live.
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3">
-              Experience Spaces are live.
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3">
-              Recovery Log is live.
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3">
-              Messages are in rollout mode.
-            </div>
-          </div>
         </div>
 
       </div>
