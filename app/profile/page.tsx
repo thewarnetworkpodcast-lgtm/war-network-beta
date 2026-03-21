@@ -1,53 +1,55 @@
 "use client";
 
-export default function ProfilePage() {
-  return (
-    <main className="min-h-screen bg-black px-4 pb-24 pt-8 text-white">
-      <div className="mx-auto flex w-full max-w-md flex-col gap-6">
+import Link from "next/link";
 
-        {/* PROFILE CARD */}
-        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-6">
+export default function HomePage() {
+  return (
+    <main className="min-h-screen bg-black px-4 pb-24 pt-16 text-white">
+      <div className="mx-auto flex w-full max-w-md flex-col items-center text-center">
 
-          <div className="flex flex-col items-center text-center">
+        {/* LOGO */}
+        <img
+          src="/fracturelight.png"
+          alt="Fracturelight"
+          className="h-36 w-36 object-contain mb-6"
+        />
 
-            {/* PROFILE IMAGE */}
-            <img
-              src="/fracturelight.png"
-              alt="Profile"
-              className="h-28 w-28 rounded-full object-cover border border-[#D4AF37]/30"
-            />
+        {/* BRAND */}
+        <p className="text-[11px] uppercase tracking-[0.25em] text-[#D4AF37]">
+          W.A.R. NETWORK
+        </p>
 
-            {/* USERNAME */}
-            <h1 className="mt-4 text-2xl font-semibold">
-              Your Name
-            </h1>
+        {/* HEADLINE */}
+        <h1 className="mt-4 text-3xl font-bold">
+          Welcome Home
+        </h1>
 
-            {/* BIO */}
-            <p className="mt-2 text-sm text-white/70">
-              This is your space. Build your identity. Share your story.
-            </p>
+        {/* SUBTEXT */}
+        <p className="mt-3 text-sm text-white/70 leading-relaxed">
+          This is your space to rebuild, connect, and move forward.
+          You don’t have to do it alone.
+        </p>
 
-            {/* FRIEND COUNT */}
-            <div className="mt-4 text-sm text-[#D4AF37]">
-              0 Friends
-            </div>
+        {/* BUTTONS */}
+        <div className="mt-8 flex w-full flex-col gap-3">
 
-            {/* EDIT BUTTON */}
-            <button className="mt-5 rounded-xl border border-[#D4AF37]/30 px-5 py-2 text-sm text-[#D4AF37] hover:bg-[#D4AF37]/10">
-              Edit Profile
-            </button>
+          <Link
+            href="/feed"
+            className="rounded-xl bg-[#D4AF37] py-3 text-black font-semibold"
+          >
+            Enter Community
+          </Link>
 
-          </div>
-        </div>
+          <Link
+            href="/spaces"
+            className="rounded-xl border border-[#D4AF37]/30 py-3 text-[#D4AF37]"
+          >
+            Explore Spaces
+          </Link>
 
-        {/* FUTURE SECTION */}
-        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-5">
-          <p className="text-sm text-white/70 text-center">
-            Your activity, posts, and recovery journey will appear here.
-          </p>
-        </div>
+        </div>
 
-      </div>
-    </main>
-  );
+      </div>
+    </main>
+  );
 }
