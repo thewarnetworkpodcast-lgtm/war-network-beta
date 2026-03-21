@@ -24,158 +24,255 @@ const ROOM_CONFIG: Record<string, RoomConfig> = {
     description:
       "Talk with others who understand military trauma, transition, identity, and recovery.",
   },
+  "ptsd-trauma": {
+    title: "PTSD & Trauma",
+    tag: "Healing",
+    description:
+      "For flashbacks, anxiety, triggers, nightmares, and the work of healing.",
+  },
+  "addiction-recovery": {
+    title: "Addiction Recovery",
+    tag: "Recovery",
+    description:
+      "A room for honesty, accountability, relapse prevention, and rebuilding one day at a time.",
+  },
+  "grief-loss": {
+    title: "Grief & Loss",
+    tag: "Support",
+    description:
+      "For anyone carrying loss, mourning change, or trying to breathe through heartbreak.",
+  },
+  "autism-parents": {
+    title: "Autism Parents",
+    tag: "Family",
+    description:
+      "Support, share, and connect with parents carrying the beautiful weight of that journey.",
+  },
+  "childhood-trauma": {
+    title: "Childhood Trauma",
+    tag: "Inner Work",
+    description:
+      "For those healing from early pain, survival patterns, and the long shadow of what happened young.",
+  },
+  "incarceration-reentry": {
+    title: "Incarceration & Reentry",
+    tag: "Rebuild",
+    description:
+      "A place for rebuilding after prison, reclaiming identity, and creating a new path.",
+  },
+  "founding-members": {
+    title: "Founding Members",
+    tag: "Alpha",
+    description:
+      "For the early builders helping shape the culture, direction, and heartbeat of W.A.R. Network.",
+  },
 };
+
+function formatTitleFromSlug(slug: string) {
+  return slug
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
 
 function formatDateTime(dateString: string) {
   const date = new Date(dateString);
 
-  return {
-    time: date.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit",
-    }),
-    date: date.toLocaleDateString(),
-  };
+  return `${date.toLocaleDateString()} • ${date.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  })}`;
 }
 
 export default function SpaceRoomPage() {
   const params = useParams();
-  const slug = params?.slug as string;
+  const slug =
+    typeof params?.slug === "string"
+      ? params.slug
+      : Array.isArray(params?.slug)
+      ? params.slug[0]
+      : "";
 
-  const room = useMemo(() => {
-    return ROOM_CONFIG[slug] || {
-      title: "Room",
-      tag: "Room",
-      description: "Welcome to the room.",
-    };
+  const room = useMemo<RoomConfig>(() => {
+    if (!slug) {
+      return {
+        title: "Room",
+        tag: "Room",
+        description: "Loading room...",
+      };
+    }
+
+    return (
+      ROOM_CONFIG[slug] ?? {
+        title: formatTitleFromSlug(slug),
+        tag: "Room",
+        description:
+          "A place to connect, post, and talk with people who understand.",
+      }
+    );
   }, [slug]);
 
-  const storageKey = `war-room-${slug}`;
-
+  const storageKey = `war-room-posts-${slug}`;
   const [posts, setPosts] = useState<RoomPost[]>([]);
   const [message, setMessage] = useState("");
+  const [isReady, setIsReady] = useState(false);
   const [profileName, setProfileName] = useState("You");
 
   useEffect(() => {
-    const saved =
-      localStorage.getItem("war-profile-name") ||
-      localStorage.getItem("profileName");
+    try {
+      const savedProfile =
+        localStorage.getItem("war-profile-name") ||
+        localStorage.getItem("profileName") ||
+        localStorage.getItem("war_display_name") ||
+        localStorage.getItem("war_username");
 
-    if (saved) setProfileName(saved);
+      if (savedProfile && savedProfile.trim()) {
+        setProfileName(savedProfile.trim());
+      }
+    } catch {
+      setProfileName("You");
+    }
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem(storageKey);
+    if (!slug) return;
 
-    if (saved) {
-      setPosts(JSON.parse(saved));
-    } else {
-      const starter: RoomPost = {
-        id: "1",
-        content: `Welcome to ${room.title}. Speak freely.`,
-        author: "W.A.R. Network",
-        createdAt: new Date().toISOString(),
-      };
+    try {
+      const saved = localStorage.getItem(storageKey);
 
-      setPosts([starter]);
-      localStorage.setItem(storageKey, JSON.stringify([starter]));
+      if (saved) {
+        setPosts(JSON.parse(saved));
+      } else {
+        const starterPost: RoomPost = {
+          id: `welcome-${slug}`,
+          content: `Welcome to ${room.title}. This room is open. Speak honestly, connect, and build forward.`,
+          author: "W.A.R. Network",
+          createdAt: new Date().toISOString(),
+        };
+
+        setPosts([starterPost]);
+        localStorage.setItem(storageKey, JSON.stringify([starterPost]));
+      }
+    } catch {
+      setPosts([]);
+    } finally {
+      setIsReady(true);
     }
-  }, [room.title, storageKey]);
+  }, [room.title, slug, storageKey]);
+
+  function savePosts(nextPosts: RoomPost[]) {
+    setPosts(nextPosts);
+    localStorage.setItem(storageKey, JSON.stringify(nextPosts));
+  }
 
   function handlePost() {
-    if (!message.trim()) return;
+    const clean = message.trim();
+
+    if (!clean) return;
 
     const newPost: RoomPost = {
-      id: Date.now().toString(),
-      content: message,
-      author: profileName || "Anonymous",
+      id: `${Date.now()}`,
+      content: clean,
+      author: profileName || "You",
       createdAt: new Date().toISOString(),
     };
 
-    const updated = [newPost, ...posts];
-    setPosts(updated);
-    localStorage.setItem(storageKey, JSON.stringify(updated));
+    const nextPosts = [newPost, ...posts];
+    savePosts(nextPosts);
     setMessage("");
   }
 
   return (
     <main className="min-h-screen bg-black px-4 pb-24 pt-6 text-white">
-      <div className="mx-auto w-full max-w-md space-y-4">
-        
-        {/* HEADER */}
-        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111] p-5 text-center">
-          <Link href="/spaces" className="text-[#D4AF37] text-sm">
-            ← Back
+      <div className="mx-auto flex w-full max-w-md flex-col gap-4">
+        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
+          <Link
+            href="/spaces"
+            className="text-sm font-semibold text-[#D4AF37]"
+          >
+            ← Back to Spaces
           </Link>
 
-          <h1 className="mt-3 text-xl font-bold">{room.title}</h1>
-          <p className="text-sm text-white/60 mt-1">{room.description}</p>
-        </div>
+          <div className="mt-4 flex flex-col items-center text-center">
+            <img
+              src="/fracturelight.png"
+              alt="Fracturelight"
+              className="h-10 w-10 object-contain mix-blend-screen"
+            />
 
-        {/* POST BOX */}
-        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111] p-5">
+            <span className="mt-3 rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/10 px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-[#D4AF37]">
+              {room.tag}
+            </span>
+
+            <h1 className="mt-3 text-xl font-semibold text-white">
+              {room.title}
+            </h1>
+
+            <p className="mt-2 max-w-[280px] text-sm leading-6 text-white/75">
+              {room.description}
+            </p>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
+          <p className="text-center text-sm font-semibold text-[#D4AF37]">
+            Room Post
+          </p>
+
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Say something real..."
-            className="w-full rounded-xl bg-black/40 p-3 text-sm outline-none border border-white/10"
+            className="mt-4 min-h-[120px] w-full resize-none rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35"
           />
 
           <button
             onClick={handlePost}
-            className="mt-3 w-full h-12 rounded-xl bg-[#D4AF37] text-black font-semibold"
+            className="mt-3 flex h-12 w-full items-center justify-center rounded-2xl bg-[#D4AF37] text-sm font-semibold text-black transition hover:opacity-90"
           >
             Post to Room
           </button>
-        </div>
+        </section>
 
-        {/* FEED */}
-        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111] p-5">
-          <div className="flex justify-between mb-3">
-            <p className="text-[#D4AF37] text-sm font-semibold">
-              Room Feed
-            </p>
-            <p className="text-xs text-white/40">
-              {posts.length} posts
+        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-[#D4AF37]">Room Feed</p>
+            <p className="text-[11px] text-white/40">
+              {posts.length} post{posts.length === 1 ? "" : "s"}
             </p>
           </div>
 
-          <div className="space-y-3">
-            {posts.map((post) => {
-              const time = formatDateTime(post.createdAt);
-
-              return (
+          <div className="mt-4 flex flex-col gap-3">
+            {!isReady ? (
+              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-sm text-white/70">
+                Loading room...
+              </div>
+            ) : posts.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-sm text-white/70">
+                No posts yet.
+              </div>
+            ) : (
+              posts.map((post) => (
                 <div
                   key={post.id}
-                  className="rounded-xl border border-white/10 bg-black/40 p-4"
+                  className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-left"
                 >
-                  {/* TOP ROW */}
-                  <div className="flex justify-between items-start">
-                    
-                    {/* NAME */}
-                    <p className="text-sm font-semibold">
-                      {post.author}
-                    </p>
-
-                    {/* TIME */}
-                    <div className="text-right text-xs text-white/40 leading-tight">
-                      <div>{time.time}</div>
-                      <div>{time.date}</div>
-                    </div>
-
-                  </div>
-
-                  {/* MESSAGE */}
-                  <p className="mt-2 text-sm text-white/80 leading-relaxed">
-                    {post.content}
+                  <p className="text-sm font-semibold text-white">
+                    {post.author || "Anonymous"}
                   </p>
 
-                </div>
-              );
-            })}
-          </div>
-        </div>
+                  <p className="mt-1 text-xs text-white/40">
+                    {formatDateTime(post.createdAt)}
+                  </p>
 
+                  <p className="mt-3 text-sm leading-6 text-white/85">
+                    {post.content}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
       </div>
     </main>
   );
