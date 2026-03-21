@@ -1,47 +1,55 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 
 type FriendRequest = {
   id: string;
-  name: string;
-  message: string;
+  sender_id: string;
+  receiver_id: string;
+  status: "pending" | "accepted" | "declined";
+  created_at: string;
 };
 
 type Friend = {
   id: string;
-  name: string;
+  user_id: string;
+  friend_id: string;
+  created_at: string;
 };
 
-const PROFILE_NAME_KEY = "war-profile-name";
-const PROFILE_BIO_KEY = "war-profile-bio";
-const FRIEND_REQUESTS_KEY = "war-friend-requests";
-const FRIENDS_KEY = "war-friends";
-
-function normalizeName(value: string) {
-  return value.trim().toLowerCase();
-}
-
-function isOldSeedName(name: string) {
-  const normalized = normalizeName(name);
-  return normalized === "kevin" || normalized === "bradley";
-}
-
 export default function ProfilePage() {
+  const [userId, setUserId] = useState<string>("");
   const [profileName, setProfileName] = useState("Your Name");
   const [profileBio, setProfileBio] = useState(
     "This is your space. Build your identity. Share your story."
   );
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    loadProfilePage();
+  }, []);
+
+  async function loadProfilePage() {
+    setLoading(true);
+
     try {
-      const savedName = localStorage.getItem(PROFILE_NAME_KEY);
-      const savedBio = localStorage.getItem(PROFILE_BIO_KEY);
-      const savedRequests = localStorage.getItem(FRIEND_REQUESTS_KEY);
-      const savedFriends = localStorage.getItem(FRIENDS_KEY);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      setUserId(user.id);
+
+      const savedName = localStorage.getItem("war-profile-name");
+      const savedBio = localStorage.getItem("war-profile-bio");
 
       if (savedName && savedName.trim()) {
         setProfileName(savedName.trim());
@@ -51,65 +59,94 @@ export default function ProfilePage() {
         setProfileBio(savedBio.trim());
       }
 
-      if (savedRequests) {
-        const parsedRequests: FriendRequest[] = JSON.parse(savedRequests);
-        const cleanedRequests = parsedRequests.filter(
-          (request) => !isOldSeedName(request.name)
-        );
-        setFriendRequests(cleanedRequests);
-        localStorage.setItem(FRIEND_REQUESTS_KEY, JSON.stringify(cleanedRequests));
-      } else {
-        setFriendRequests([]);
-        localStorage.setItem(FRIEND_REQUESTS_KEY, JSON.stringify([]));
-      }
-
-      if (savedFriends) {
-        const parsedFriends: Friend[] = JSON.parse(savedFriends);
-        const cleanedFriends = parsedFriends.filter(
-          (friend) => !isOldSeedName(friend.name)
-        );
-        setFriends(cleanedFriends);
-        localStorage.setItem(FRIENDS_KEY, JSON.stringify(cleanedFriends));
-      } else {
-        setFriends([]);
-        localStorage.setItem(FRIENDS_KEY, JSON.stringify([]));
-      }
-    } catch {
-      setFriendRequests([]);
-      setFriends([]);
+      await Promise.all([loadFriendRequests(user.id), loadFriends(user.id)]);
+    } catch (error) {
+      console.error("Profile page load failed:", error);
+    } finally {
+      setLoading(false);
     }
-  }, []);
-
-  function persistRequests(nextRequests: FriendRequest[]) {
-    setFriendRequests(nextRequests);
-    localStorage.setItem(FRIEND_REQUESTS_KEY, JSON.stringify(nextRequests));
   }
 
-  function persistFriends(nextFriends: Friend[]) {
-    setFriends(nextFriends);
-    localStorage.setItem(FRIENDS_KEY, JSON.stringify(nextFriends));
+  async function loadFriendRequests(currentUserId: string) {
+    const { data, error } = await supabase
+      .from("friend_requests")
+      .select("id, sender_id, receiver_id, status, created_at")
+      .eq("receiver_id", currentUserId)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Loading friend requests failed:", error);
+      setFriendRequests([]);
+      return;
+    }
+
+    setFriendRequests((data as FriendRequest[]) || []);
   }
 
-  function handleAcceptRequest(request: FriendRequest) {
-    const nextRequests = friendRequests.filter((item) => item.id !== request.id);
-    const alreadyFriend = friends.some((friend) => friend.id === request.id);
+  async function loadFriends(currentUserId: string) {
+    const { data, error } = await supabase
+      .from("friends")
+      .select("id, user_id, friend_id, created_at")
+      .eq("user_id", currentUserId)
+      .order("created_at", { ascending: false });
 
-    const nextFriends = alreadyFriend
-      ? friends
-      : [...friends, { id: request.id, name: request.name }];
+    if (error) {
+      console.error("Loading friends failed:", error);
+      setFriends([]);
+      return;
+    }
 
-    persistRequests(nextRequests);
-    persistFriends(nextFriends);
+    setFriends((data as Friend[]) || []);
   }
 
-  function handleDeclineRequest(requestId: string) {
-    const nextRequests = friendRequests.filter((item) => item.id !== requestId);
-    persistRequests(nextRequests);
+  async function acceptRequest(request: FriendRequest) {
+    if (!userId) return;
+
+    const { error: updateError } = await supabase
+      .from("friend_requests")
+      .update({ status: "accepted" })
+      .eq("id", request.id);
+
+    if (updateError) {
+      console.error("Accept request failed:", updateError);
+      return;
+    }
+
+    const { error: insertError } = await supabase.from("friends").insert([
+      {
+        user_id: request.sender_id,
+        friend_id: request.receiver_id,
+      },
+      {
+        user_id: request.receiver_id,
+        friend_id: request.sender_id,
+      },
+    ]);
+
+    if (insertError) {
+      console.error("Creating friendship failed:", insertError);
+      return;
+    }
+
+    await Promise.all([loadFriendRequests(userId), loadFriends(userId)]);
   }
 
-  const friendCountText = useMemo(() => {
-    return `${friends.length} Friend${friends.length === 1 ? "" : "s"}`;
-  }, [friends.length]);
+  async function declineRequest(requestId: string) {
+    if (!userId) return;
+
+    const { error } = await supabase
+      .from("friend_requests")
+      .update({ status: "declined" })
+      .eq("id", requestId);
+
+    if (error) {
+      console.error("Decline request failed:", error);
+      return;
+    }
+
+    await loadFriendRequests(userId);
+  }
 
   return (
     <main className="min-h-screen bg-black px-4 pb-24 pt-6 text-white">
@@ -131,7 +168,7 @@ export default function ProfilePage() {
             </p>
 
             <p className="mt-6 text-xl font-medium text-[#D4AF37]">
-              {friendCountText}
+              {friends.length} Friends
             </p>
 
             <Link
@@ -144,16 +181,22 @@ export default function ProfilePage() {
         </section>
 
         <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-[#D4AF37]">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-[#D4AF37]">
               Friend Requests
             </h2>
-            <p className="text-sm text-white/45">{friendRequests.length} pending</p>
+            <p className="mt-1 text-sm text-white/45">
+              {friendRequests.length} pending
+            </p>
           </div>
 
           <div className="mt-4 flex flex-col gap-3">
-            {friendRequests.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-sm leading-6 text-white/65">
+            {loading ? (
+              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-center text-sm leading-6 text-white/65">
+                Loading requests...
+              </div>
+            ) : friendRequests.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-center text-sm leading-6 text-white/65">
                 No pending friend requests.
               </div>
             ) : (
@@ -162,24 +205,24 @@ export default function ProfilePage() {
                   key={request.id}
                   className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4"
                 >
-                  <p className="text-base font-semibold text-white">
-                    {request.name}
+                  <p className="text-center text-base font-semibold text-white">
+                    Sender: {request.sender_id.slice(0, 8)}
                   </p>
 
-                  <p className="mt-2 text-sm leading-6 text-white/70">
-                    {request.message}
+                  <p className="mt-2 text-center text-sm leading-6 text-white/60">
+                    Wants to connect with you.
                   </p>
 
                   <div className="mt-4 grid grid-cols-2 gap-3">
                     <button
-                      onClick={() => handleAcceptRequest(request)}
+                      onClick={() => acceptRequest(request)}
                       className="flex h-11 w-full items-center justify-center rounded-2xl bg-[#D4AF37] text-sm font-semibold text-black"
                     >
                       Accept
                     </button>
 
                     <button
-                      onClick={() => handleDeclineRequest(request.id)}
+                      onClick={() => declineRequest(request.id)}
                       className="flex h-11 w-full items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-sm font-semibold text-white"
                     >
                       Decline
@@ -192,16 +235,22 @@ export default function ProfilePage() {
         </section>
 
         <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-[#D4AF37]">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-[#D4AF37]">
               Friends List
             </h2>
-            <p className="text-sm text-white/45">{friends.length} total</p>
+            <p className="mt-1 text-sm text-white/45">
+              {friends.length} total
+            </p>
           </div>
 
           <div className="mt-4 flex flex-col gap-3">
-            {friends.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-sm leading-6 text-white/65">
+            {loading ? (
+              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-center text-sm leading-6 text-white/65">
+                Loading friends...
+              </div>
+            ) : friends.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-center text-sm leading-6 text-white/65">
                 No friends added yet.
               </div>
             ) : (
@@ -210,8 +259,8 @@ export default function ProfilePage() {
                   key={friend.id}
                   className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4"
                 >
-                  <p className="text-base font-semibold text-white">
-                    {friend.name}
+                  <p className="text-center text-base font-semibold text-white">
+                    Friend: {friend.friend_id.slice(0, 8)}
                   </p>
                 </div>
               ))
@@ -220,7 +269,7 @@ export default function ProfilePage() {
         </section>
 
         <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
-          <p className="text-sm leading-6 text-white/60">
+          <p className="text-center text-sm leading-6 text-white/60">
             Your activity and posts will appear here.
           </p>
         </section>
