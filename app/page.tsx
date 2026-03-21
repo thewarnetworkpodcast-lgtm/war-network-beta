@@ -1,57 +1,107 @@
-import Image from "next/image";
+"use client";
 
-export default function HomePage() {
-  return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center px-4 pt-10 pb-16">
-      <section className="w-full max-w-2xl text-center py-16">
-        
-        {/* LOGO */}
-        <div className="flex justify-center mb-6">
-          <Image
-            src="/fracturelight.png"
-            alt="Fracturelight symbol"
-            width={120}
-            height={120}
-            priority
-            className="object-contain"
-          />
-        </div>
+import { useEffect, useState } from "react";
 
-        {/* TOP LABEL */}
-        <p className="text-[10px] tracking-[0.3em] text-[#D4AF37]/70 uppercase mb-2">
-          Founding Member Alpha
-        </p>
+type Post = {
+  id: string;
+  content: string;
+  createdAt: string;
+};
 
-        {/* TITLE */}
-        <h1 className="text-4xl sm:text-5xl font-bold text-[#D4AF37] leading-tight">
-          Welcome Home
-        </h1>
+const STORAGE_KEY = "war-feed-posts";
 
-        {/* BRAND */}
-        <p className="mt-3 text-lg font-semibold">
-          W.A.R. Network
-        </p>
+export default function Home() {
+  const [text, setText] = useState("");
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
-        <p className="text-[11px] tracking-[0.25em] text-[#D4AF37] uppercase mt-1">
-          We&apos;re All Recovering
-        </p>
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      setPosts(JSON.parse(saved));
+    }
+    setLoaded(true);
+  }, []);
 
-        {/* DESCRIPTION */}
-        <p className="mt-6 text-base text-white/80 leading-relaxed px-2">
-          The new social platform for healing, rebuilding, discipline, and real connection.
-        </p>
+  useEffect(() => {
+    if (!loaded) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+  }, [posts, loaded]);
 
-        {/* FEATURE BOX */}
-        <div className="mt-8 border border-[#D4AF37]/20 rounded-xl p-5">
-          <p className="text-[#D4AF37] font-semibold text-sm">
-            Private rooms. Recovery Log. Member messaging.
-          </p>
-          <p className="text-white/70 text-sm mt-2 leading-relaxed">
-            Built for people who are done pretending and ready to rebuild for real.
-          </p>
-        </div>
+  function handlePost() {
+    if (!text.trim()) return;
 
-      </section>
-    </main>
-  );
+    const newPost: Post = {
+      id: crypto.randomUUID(),
+      content: text,
+      createdAt: new Date().toISOString(),
+    };
+
+    setPosts((prev) => [newPost, ...prev]);
+    setText("");
+  }
+
+  function formatDate(date: string) {
+    return new Date(date).toLocaleString();
+  }
+
+  return (
+    <main className="min-h-screen bg-black px-4 pb-24 pt-6 text-white">
+      <div className="mx-auto w-full max-w-md flex flex-col gap-6">
+
+        {/* Header */}
+        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-5">
+          <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]">
+            W.A.R. Network
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold">
+            Welcome Home
+          </h1>
+        </div>
+
+        {/* Post Box */}
+        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-5">
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Say something real..."
+            className="w-full rounded-2xl bg-black border border-[#D4AF37]/20 p-3 text-sm text-white resize-none outline-none"
+            rows={4}
+          />
+
+          <button
+            onClick={handlePost}
+            className="mt-3 w-full bg-[#D4AF37] text-black py-3 rounded-2xl text-sm font-semibold"
+          >
+            Post
+          </button>
+        </div>
+
+        {/* Feed */}
+        <div className="flex flex-col gap-4">
+          {posts.length === 0 ? (
+            <div className="text-white/60 text-sm">
+              No posts yet.
+            </div>
+          ) : (
+            posts.map((post) => (
+              <div
+                key={post.id}
+                className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-5"
+              >
+                <p className="text-sm whitespace-pre-wrap">
+                  {post.content}
+                </p>
+
+                <p className="mt-3 text-xs text-white/40">
+                  {formatDate(post.createdAt)}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+
+      </div>
+    </main>
+  );
 }
