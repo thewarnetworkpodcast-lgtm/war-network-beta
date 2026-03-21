@@ -22,11 +22,11 @@ export default function HomePage() {
               Welcome Home
             </h1>
 
-            <div className="mt-4 w-full flex justify-center">
-              <p className="max-w-[260px] text-center text-sm leading-7 text-white/75">
-                A place to rebuild, connect, speak honestly, and keep moving forward together.
-              </p>
-            </div>
+            <p className="mt-4 text-center text-sm leading-7 text-white/75">
+              A place to rebuild, connect, speak honestly,
+              <br />
+              and keep moving forward together.
+            </p>
           </div>
         </div>
 
@@ -78,9 +78,13 @@ export default function HomePage() {
             What This Is
           </p>
 
-          <div className="mt-3 w-full flex justify-center">
-            <p className="max-w-[260px] text-center text-sm leading-7 text-white/75">
-              W.A.R. Network is a home for people rebuilding through trauma, recovery, discipline, and honest community.
+          <div className="mt-4 flex justify-center">
+            <p className="text-center text-sm leading-7 text-white/75">
+              W.A.R. Network is a home for people rebuilding
+              <br />
+              through trauma, recovery, discipline,
+              <br />
+              and honest community.
             </p>
           </div>
         </div>
