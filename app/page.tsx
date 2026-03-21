@@ -5,9 +5,12 @@ import Link from "next/link";
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-black px-4 pb-24 pt-8 text-white">
-      <div className="mx-auto flex w-full max-w-md flex-col gap-5">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-4">
+        
+        {/* HEADER CARD */}
         <div className="w-full rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-8">
           <div className="flex flex-col items-center text-center">
+            
             <img
               src="/fracturelight.png"
               alt="Fracturelight"
@@ -28,12 +31,14 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* ACTIONS CARD */}
         <div className="w-full rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
           <p className="text-center text-sm font-semibold text-[#D4AF37]">
             Start Here
           </p>
 
           <div className="mt-4 flex flex-col gap-3">
+            
             <Link
               href="/feed"
               className="flex h-12 items-center justify-center rounded-2xl bg-[#D4AF37] text-sm font-semibold text-black"
@@ -68,18 +73,21 @@ export default function HomePage() {
             >
               Create Profile
             </Link>
+
           </div>
         </div>
 
-        <div className="w-full rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-6">
+        {/* WHAT THIS IS CARD */}
+        <div className="w-full rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
           <p className="text-sm font-semibold text-[#D4AF37]">
             What This Is
           </p>
 
-          <p className="mt-4 max-w-[280px] text-sm leading-7 text-white/75">
+          <p className="mt-3 text-sm leading-6 text-white/75 text-center">
             W.A.R. Network is a home for people rebuilding through trauma.
           </p>
         </div>
+
       </div>
     </main>
   );
