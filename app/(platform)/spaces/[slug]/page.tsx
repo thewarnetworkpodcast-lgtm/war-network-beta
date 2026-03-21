@@ -1,170 +1,252 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 
-type Space = {
-  id: string;
-  name: string;
-  password: string;
-};
-
-type Post = {
+type RoomPost = {
   id: string;
   content: string;
+  author: string;
   createdAt: string;
 };
 
-const STORAGE_KEY = "war-private-spaces";
-const POSTS_KEY = "war-space-posts-";
-const ACCESS_KEY = "war-space-access-";
+type RoomConfig = {
+  title: string;
+  tag: string;
+  description: string;
+};
 
-function toSlug(value: string) {
-  return value.toLowerCase().trim().replace(/\s+/g, "-");
+const ROOM_CONFIG: Record<string, RoomConfig> = {
+  "combat-veterans": {
+    title: "Combat Veterans",
+    tag: "Service",
+    description:
+      "Talk with others who understand military trauma, transition, identity, and recovery.",
+  },
+  "ptsd-trauma": {
+    title: "PTSD & Trauma",
+    tag: "Healing",
+    description:
+      "For flashbacks, anxiety, triggers, nightmares, and the work of healing.",
+  },
+  "addiction-recovery": {
+    title: "Addiction Recovery",
+    tag: "Recovery",
+    description:
+      "A room for honesty, accountability, relapse prevention, and rebuilding one day at a time.",
+  },
+  "grief-loss": {
+    title: "Grief & Loss",
+    tag: "Support",
+    description:
+      "For anyone carrying loss, mourning change, or trying to breathe through heartbreak.",
+  },
+  "autism-parents": {
+    title: "Autism Parents",
+    tag: "Family",
+    description:
+      "Support, share, and connect with parents carrying the beautiful weight of that journey.",
+  },
+  "childhood-trauma": {
+    title: "Childhood Trauma",
+    tag: "Inner Work",
+    description:
+      "For those healing from early pain, survival patterns, and the long shadow of what happened young.",
+  },
+  "incarceration-reentry": {
+    title: "Incarceration & Reentry",
+    tag: "Rebuild",
+    description:
+      "A place for rebuilding after prison, reclaiming identity, and creating a new path.",
+  },
+  "founding-members": {
+    title: "Founding Members",
+    tag: "Alpha",
+    description:
+      "For the early builders helping shape the culture, direction, and heartbeat of W.A.R. Network.",
+  },
+};
+
+function formatTitleFromSlug(slug: string) {
+  return slug
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
-export default function SpacePage() {
+export default function SpaceRoomPage() {
   const params = useParams();
-  const slug = String(params.slug);
+  const slug =
+    typeof params?.slug === "string"
+      ? params.slug
+      : Array.isArray(params?.slug)
+      ? params.slug[0]
+      : "";
 
-  const [space, setSpace] = useState<Space | null>(null);
-  const [entered, setEntered] = useState(false);
-  const [inputPassword, setInputPassword] = useState("");
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [text, setText] = useState("");
-
-  useEffect(() => {
-    const savedSpaces = localStorage.getItem(STORAGE_KEY);
-    if (savedSpaces) {
-      const parsedSpaces: Space[] = JSON.parse(savedSpaces);
-      const found = parsedSpaces.find((s) => toSlug(s.name) === slug) || null;
-      setSpace(found);
+  const room = useMemo<RoomConfig>(() => {
+    if (!slug) {
+      return {
+        title: "Room",
+        tag: "Room",
+        description: "Loading room...",
+      };
     }
 
-    const savedPosts = localStorage.getItem(`${POSTS_KEY}${slug}`);
-    if (savedPosts) {
-      setPosts(JSON.parse(savedPosts));
-    }
-
-    const savedAccess = localStorage.getItem(`${ACCESS_KEY}${slug}`);
-    if (savedAccess === "granted") {
-      setEntered(true);
-    }
+    return (
+      ROOM_CONFIG[slug] ?? {
+        title: formatTitleFromSlug(slug),
+        tag: "Room",
+        description: "A place to connect, post, and talk with people who understand.",
+      }
+    );
   }, [slug]);
 
+  const storageKey = `war-room-posts-${slug}`;
+  const [posts, setPosts] = useState<RoomPost[]>([]);
+  const [message, setMessage] = useState("");
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
-    localStorage.setItem(`${POSTS_KEY}${slug}`, JSON.stringify(posts));
-  }, [posts, slug]);
+    if (!slug) return;
 
-  function handleEnter() {
-    if (!space) return;
-    if (inputPassword !== space.password) return;
+    try {
+      const saved = localStorage.getItem(storageKey);
 
-    setEntered(true);
-    localStorage.setItem(`${ACCESS_KEY}${slug}`, "granted");
+      if (saved) {
+        setPosts(JSON.parse(saved));
+      } else {
+        const starterPost: RoomPost = {
+          id: `welcome-${slug}`,
+          content: `Welcome to ${room.title}. This room is open. Speak honestly, connect, and build forward.`,
+          author: "W.A.R. Network",
+          createdAt: new Date().toISOString(),
+        };
+
+        setPosts([starterPost]);
+        localStorage.setItem(storageKey, JSON.stringify([starterPost]));
+      }
+    } catch {
+      setPosts([]);
+    } finally {
+      setIsReady(true);
+    }
+  }, [room.title, slug, storageKey]);
+
+  function savePosts(nextPosts: RoomPost[]) {
+    setPosts(nextPosts);
+    localStorage.setItem(storageKey, JSON.stringify(nextPosts));
   }
 
   function handlePost() {
-    if (!text.trim()) return;
+    const clean = message.trim();
 
-    const newPost: Post = {
-      id: crypto.randomUUID(),
-      content: text.trim(),
+    if (!clean) return;
+
+    const newPost: RoomPost = {
+      id: `${Date.now()}`,
+      content: clean,
+      author: "You",
       createdAt: new Date().toISOString(),
     };
 
-    setPosts((prev) => [newPost, ...prev]);
-    setText("");
-  }
-
-  function formatDate(date: string) {
-    return new Date(date).toLocaleString();
-  }
-
-  if (!space) {
-    return (
-      <main className="min-h-screen bg-black px-4 pt-6 pb-24 text-white">
-        <div className="mx-auto flex min-h-[70vh] w-full max-w-md items-center justify-center">
-          <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-5 text-center">
-            Space not found
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  if (!entered) {
-    return (
-      <main className="min-h-screen bg-black px-4 pt-6 pb-24 text-white">
-        <div className="mx-auto flex min-h-[70vh] w-full max-w-md items-center justify-center">
-          <div className="w-full rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-5">
-            <h1 className="text-xl font-semibold text-white">{space.name}</h1>
-
-            <input
-              type="password"
-              placeholder="Enter password"
-              value={inputPassword}
-              onChange={(e) => setInputPassword(e.target.value)}
-              className="mt-4 w-full rounded-2xl border border-[#D4AF37]/20 bg-black p-3 text-sm text-white outline-none placeholder:text-white/35"
-            />
-
-            <button
-              onClick={handleEnter}
-              className="mt-3 w-full rounded-2xl bg-[#D4AF37] py-3 text-sm font-semibold text-black"
-            >
-              Enter Space
-            </button>
-          </div>
-        </div>
-      </main>
-    );
+    const nextPosts = [newPost, ...posts];
+    savePosts(nextPosts);
+    setMessage("");
   }
 
   return (
-    <main className="min-h-screen bg-black px-4 pt-6 pb-24 text-white">
-      <div className="mx-auto flex w-full max-w-md flex-col gap-6">
-        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-5">
-          <h1 className="text-xl font-semibold text-white">{space.name}</h1>
-        </div>
+    <main className="min-h-screen bg-black px-4 pb-24 pt-6 text-white">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-4">
+        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
+          <Link
+            href="/spaces"
+            className="text-sm font-semibold text-[#D4AF37]"
+          >
+            ← Back to Spaces
+          </Link>
 
-        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-5">
+          <div className="mt-4 flex flex-col items-center text-center">
+            <img
+              src="/fracturelight.png"
+              alt="Fracturelight"
+              className="h-10 w-10 object-contain mix-blend-screen"
+            />
+
+            <span className="mt-3 rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/10 px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-[#D4AF37]">
+              {room.tag}
+            </span>
+
+            <h1 className="mt-3 text-xl font-semibold text-white">
+              {room.title}
+            </h1>
+
+            <p className="mt-2 max-w-[280px] text-sm leading-6 text-white/75">
+              {room.description}
+            </p>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
+          <p className="text-center text-sm font-semibold text-[#D4AF37]">
+            Room Post
+          </p>
+
           <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Speak freely..."
-            rows={4}
-            className="w-full rounded-2xl border border-[#D4AF37]/20 bg-black p-3 text-sm text-white outline-none placeholder:text-white/35"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Say something real..."
+            className="mt-4 min-h-[120px] w-full resize-none rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35"
           />
 
           <button
             onClick={handlePost}
-            className="mt-3 w-full rounded-2xl bg-[#D4AF37] py-3 text-sm font-semibold text-black"
+            className="mt-3 flex h-12 w-full items-center justify-center rounded-2xl bg-[#D4AF37] text-sm font-semibold text-black transition hover:opacity-90"
           >
-            Post
+            Post to Room
           </button>
-        </div>
+        </section>
 
-        <div className="flex flex-col gap-3">
-          {posts.length === 0 ? (
-            <div className="rounded-2xl border border-[#D4AF37]/20 bg-[#111111] p-4 text-sm text-white/50">
-              No posts yet.
-            </div>
-          ) : (
-            posts.map((post) => (
-              <div
-                key={post.id}
-                className="rounded-2xl border border-[#D4AF37]/20 bg-[#111111] p-4"
-              >
-                <p className="text-sm whitespace-pre-wrap text-white">
-                  {post.content}
-                </p>
-                <p className="mt-2 text-xs text-white/40">
-                  {formatDate(post.createdAt)}
-                </p>
+        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-[#D4AF37]">Room Feed</p>
+            <p className="text-[11px] text-white/40">
+              {posts.length} post{posts.length === 1 ? "" : "s"}
+            </p>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-3">
+            {!isReady ? (
+              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-sm text-white/70">
+                Loading room...
               </div>
-            ))
-          )}
-        </div>
+            ) : posts.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-sm text-white/70">
+                No posts yet.
+              </div>
+            ) : (
+              posts.map((post) => (
+                <div
+                  key={post.id}
+                  className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-white">
+                      {post.author}
+                    </p>
+                    <p className="text-[11px] text-white/40">
+                      {new Date(post.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+
+                  <p className="mt-3 text-sm leading-6 text-white/80">
+                    {post.content}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
       </div>
     </main>
   );
