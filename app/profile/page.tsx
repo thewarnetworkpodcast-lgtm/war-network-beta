@@ -1,13 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-
-type ProfileResult = {
-  id: string;
-  full_name: string | null;
-  email: string | null;
-};
 
 export default function ProfilePage() {
   const [profileName, setProfileName] = useState("Your Name");
@@ -15,97 +10,38 @@ export default function ProfilePage() {
     "This is your space. Build your identity. Share your story."
   );
   const [friendsCount, setFriendsCount] = useState(0);
-  const [userId, setUserId] = useState("");
-
   const [searchName, setSearchName] = useState("");
-  const [results, setResults] = useState<ProfileResult[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     void loadProfile();
   }, []);
 
   async function loadProfile() {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (!user) return;
+      if (!user) return;
 
-    setUserId(user.id);
+      setUserId(user.id);
 
-    const savedName = localStorage.getItem("war-profile-name");
-    const savedBio = localStorage.getItem("war-profile-bio");
+      const savedName = localStorage.getItem("war-profile-name");
+      const savedBio = localStorage.getItem("war-profile-bio");
 
-    if (savedName && savedName.trim()) setProfileName(savedName);
-    if (savedBio && savedBio.trim()) setProfileBio(savedBio);
+      if (savedName && savedName.trim()) setProfileName(savedName);
+      if (savedBio && savedBio.trim()) setProfileBio(savedBio);
 
-    const { data } = await supabase
-      .from("friends")
-      .select("id")
-      .eq("user_id", user.id);
+      const { data } = await supabase
+        .from("friends")
+        .select("id")
+        .eq("user_id", user.id);
 
-    if (data) setFriendsCount(data.length);
-  }
-
-  async function searchByName() {
-    const cleanName = searchName.trim();
-
-    if (!cleanName) {
-      setResults([]);
-      return;
+      if (data) setFriendsCount(data.length);
+    } catch (error) {
+      console.error("Profile load failed:", error);
     }
-
-    setSearching(true);
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, full_name, email")
-      .ilike("full_name", `%${cleanName}%`)
-      .limit(10);
-
-    if (error) {
-      console.error("Name search failed:", error);
-      setResults([]);
-      setSearching(false);
-      return;
-    }
-
-    const filtered = (data || []).filter((profile) => profile.id !== userId);
-    setResults(filtered as ProfileResult[]);
-    setSearching(false);
-  }
-
-  async function sendFriendRequest(receiverId: string) {
-    if (!userId || !receiverId || receiverId === userId) return;
-
-    const { data: existingPending } = await supabase
-      .from("friend_requests")
-      .select("id")
-      .eq("sender_id", userId)
-      .eq("receiver_id", receiverId)
-      .eq("status", "pending");
-
-    if (existingPending && existingPending.length > 0) {
-      alert("Request already sent");
-      return;
-    }
-
-    const { error } = await supabase.from("friend_requests").insert([
-      {
-        sender_id: userId,
-        receiver_id: receiverId,
-        status: "pending",
-      },
-    ]);
-
-    if (error) {
-      console.error("send request failed:", error);
-      alert("Could not send request");
-      return;
-    }
-
-    alert("Friend request sent");
   }
 
   return (
@@ -128,9 +64,12 @@ export default function ProfilePage() {
             {friendsCount} Friends
           </p>
 
-          <button className="mt-4 w-full rounded-lg border border-[#D4AF37] py-2 text-[#D4AF37]">
+          <Link
+            href="/profile/edit"
+            className="mt-4 block w-full rounded-lg border border-[#D4AF37] py-2 text-center text-[#D4AF37]"
+          >
             Edit Profile
-          </button>
+          </Link>
         </section>
 
         <section className="rounded-2xl border border-white/10 bg-black/40 p-4 text-center">
@@ -146,44 +85,13 @@ export default function ProfilePage() {
           />
 
           <button
-            onClick={searchByName}
             className="w-full rounded-lg bg-[#D4AF37] py-2 text-sm font-semibold text-black"
           >
             Search
           </button>
 
-          <div className="mt-4 flex flex-col gap-2">
-            {searching ? (
-              <div className="rounded-lg border border-white/10 py-3 text-center text-sm text-white/50">
-                Searching...
-              </div>
-            ) : results.length === 0 ? (
-              <div className="rounded-lg border border-white/10 py-3 text-center text-sm text-white/50">
-                No users found.
-              </div>
-            ) : (
-              results.map((profile) => (
-                <div
-                  key={profile.id}
-                  className="rounded-lg border border-white/10 p-3 text-left"
-                >
-                  <p className="text-sm font-semibold text-white">
-                    {profile.full_name || "Unnamed User"}
-                  </p>
-
-                  <p className="mt-1 break-all text-xs text-white/50">
-                    {profile.email || "No email shown"}
-                  </p>
-
-                  <button
-                    onClick={() => sendFriendRequest(profile.id)}
-                    className="mt-3 w-full rounded-lg bg-[#D4AF37] py-2 text-sm font-semibold text-black"
-                  >
-                    Add Friend
-                  </button>
-                </div>
-              ))
-            )}
+          <div className="mt-4 rounded-lg border border-white/10 py-3 text-center text-sm text-white/50">
+            No users found.
           </div>
         </section>
       </div>
