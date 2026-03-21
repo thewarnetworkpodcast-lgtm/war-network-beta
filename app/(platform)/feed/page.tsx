@@ -1,112 +1,99 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/app/lib/supabaseClient";
-
-type FeedPost = {
-  id: string;
-  content: string;
-  created_at: string;
-};
-
-const DEMO_USER_ID = "553c8b42-0ef3-4986-97c2-a77c60b52f04";
+import { useState } from "react";
 
 export default function FeedPage() {
-  const [postText, setPostText] = useState("");
-  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [content, setContent] = useState("");
+  const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const loadPosts = async () => {
-    const { data, error } = await supabase
-      .from("posts")
-      .select("id, content, created_at")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("LOAD POSTS ERROR:", error);
-      return;
-    }
-
-    setPosts(data || []);
-  };
-
-  useEffect(() => {
-    loadPosts();
-  }, []);
-
   const handlePost = async () => {
-    const trimmed = postText.trim();
-    if (!trimmed || loading) return;
+    if (!content.trim()) return;
 
     setLoading(true);
 
-    const { error } = await supabase.from("posts").insert([
-      {
-        content: trimmed,
-        user_id: DEMO_USER_ID,
-      },
-    ]);
+    const newPost = {
+      id: Date.now(),
+      content,
+      created_at: new Date().toISOString(),
+    };
 
-    if (error) {
-      console.error("POST ERROR:", error);
-      setLoading(false);
-      return;
-    }
-
-    setPostText("");
-    await loadPosts();
+    setPosts([newPost, ...posts]);
+    setContent("");
     setLoading(false);
   };
 
   return (
-    <main className="flex-1 bg-black px-4 py-6 text-white">
-      <div className="w-full max-w-md mx-auto">
-        <div className="mb-6 text-center">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-[#D4AF37]">
-            W.A.R. Network
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold leading-tight text-white">
-            Community Feed
-          </h1>
-        </div>
+    <main className="min-h-screen bg-black px-4 pb-24 pt-6 text-white flex flex-col items-center">
 
-        <div className="rounded-2xl border border-[#D4AF37]/20 bg-[#111111] p-4 mb-6">
-          <textarea
-            placeholder="What are you carrying today?"
-            value={postText}
-            onChange={(e) => setPostText(e.target.value)}
-            className="w-full min-h-[110px] rounded-xl border border-[#D4AF37]/15 bg-black px-4 py-3 text-sm text-white outline-none"
+      {/* HEADER */}
+      <div className="w-full max-w-md rounded-3xl border border-[#D4AF37]/30 bg-[#111111] p-6 text-center">
+        
+        <div className="flex items-center justify-center gap-2">
+          <img
+            src="/fracturelight.png"
+            className="h-6 w-6 object-contain"
           />
-
-          <button
-            onClick={handlePost}
-            disabled={loading}
-            className="mt-3 w-full rounded-xl bg-[#D4AF37] px-4 py-3 text-sm font-semibold text-black disabled:opacity-60"
-          >
-            {loading ? "Posting..." : "Post to Feed"}
-          </button>
+          <p className="text-[11px] tracking-[0.25em] text-[#D4AF37]">
+            W.A.R. NETWORK
+          </p>
         </div>
 
-        <div className="space-y-4">
-          {posts.map((post) => (
+        <h1 className="mt-4 text-2xl font-bold">
+          Welcome Home
+        </h1>
+
+        <p className="mt-2 text-sm text-white/60">
+          Say what you need to say. This is your space.
+        </p>
+      </div>
+
+      {/* POST BOX */}
+      <div className="mt-6 w-full max-w-md rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-4">
+        
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Say something real..."
+          className="w-full rounded-xl bg-black p-3 text-sm text-white outline-none placeholder:text-white/40"
+        />
+
+        <button
+          onClick={handlePost}
+          disabled={loading}
+          className="mt-3 w-full rounded-xl bg-[#D4AF37] py-3 text-sm font-semibold text-black transition hover:opacity-90"
+        >
+          {loading ? "Posting..." : "Post"}
+        </button>
+      </div>
+
+      {/* POSTS */}
+      <div className="mt-6 w-full max-w-md space-y-4">
+        {posts.length === 0 ? (
+          <p className="text-center text-sm text-white/40">
+            No posts yet.
+          </p>
+        ) : (
+          posts.map((post) => (
             <div
               key={post.id}
               className="rounded-2xl border border-[#D4AF37]/20 bg-[#111111] p-4"
             >
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-white">Stryker</p>
-                <p className="shrink-0 text-xs text-white/40">
+              <div className="flex justify-between text-xs text-white/40">
+                <span>Stryker</span>
+                <span>
                   {new Date(post.created_at).toLocaleString()}
-                </p>
+                </span>
               </div>
 
-              <p className="mt-3 text-sm leading-6 text-white/80">
+              <p className="mt-2 text-sm text-white/90 leading-relaxed">
                 {post.content}
               </p>
             </div>
-          ))}
-        </div>
+          ))
+        )}
       </div>
+
     </main>
   );
 }
