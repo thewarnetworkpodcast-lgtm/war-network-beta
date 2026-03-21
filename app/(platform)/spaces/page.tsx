@@ -13,49 +13,57 @@ const featuredSpaces: SpaceCard[] = [
   {
     title: "Combat Veterans",
     slug: "combat-veterans",
-    description: "A place for veterans to speak openly about service, transition, identity, and recovery.",
+    description:
+      "Talk with others who understand military trauma, transition, identity, and recovery.",
     tag: "Service",
   },
   {
     title: "PTSD & Trauma",
     slug: "ptsd-trauma",
-    description: "For those navigating flashbacks, anxiety, triggers, nightmares, and the work of healing.",
+    description:
+      "For those navigating flashbacks, anxiety, triggers, nightmares, and the work of healing.",
     tag: "Healing",
   },
   {
     title: "Addiction Recovery",
     slug: "addiction-recovery",
-    description: "A room for honesty, accountability, relapse prevention, and rebuilding one day at a time.",
+    description:
+      "A room for honesty, accountability, relapse prevention, and rebuilding one day at a time.",
     tag: "Recovery",
   },
   {
     title: "Grief & Loss",
     slug: "grief-loss",
-    description: "For anyone carrying loss, mourning change, or trying to breathe through heartbreak.",
+    description:
+      "For anyone carrying loss, mourning change, or trying to breathe through heartbreak.",
     tag: "Support",
   },
   {
     title: "Autism Parents",
     slug: "autism-parents",
-    description: "A room for parents raising autistic children and carrying the beautiful weight of that journey.",
+    description:
+      "Support, share, and connect with parents carrying the beautiful weight of that journey.",
     tag: "Family",
   },
   {
     title: "Childhood Trauma",
     slug: "childhood-trauma",
-    description: "For those healing from early pain, survival patterns, and the long shadow of what happened young.",
+    description:
+      "For those healing from early pain, survival patterns, and the long shadow of what happened young.",
     tag: "Inner Work",
   },
   {
     title: "Incarceration & Reentry",
     slug: "incarceration-reentry",
-    description: "A place for rebuilding after prison, reclaiming identity, and creating a new path.",
+    description:
+      "A place for rebuilding after prison, reclaiming identity, and creating a new path.",
     tag: "Rebuild",
   },
   {
     title: "Founding Members",
     slug: "founding-members",
-    description: "For the early builders helping shape the culture, direction, and heartbeat of W.A.R. Network.",
+    description:
+      "For the early builders helping shape the culture, direction, and heartbeat of W.A.R. Network.",
     tag: "Alpha",
   },
 ];
@@ -67,11 +75,13 @@ const supportLinks = [
   },
   {
     title: "Veterans Crisis Line",
-    description: "Veterans can call 988 then press 1, text 838255, or chat online.",
+    description:
+      "Veterans can call 988 then press 1, text 838255, or chat online.",
   },
   {
     title: "Grounding Reset",
-    description: "Pause. Breathe in for 4, hold for 4, out for 6. Repeat until your body slows down.",
+    description:
+      "Breathe in for 4, hold for 4, out for 6. Repeat until your body slows down.",
   },
 ];
 
@@ -97,12 +107,13 @@ export default function SpacesPage() {
             </h1>
 
             <p className="mt-3 max-w-[280px] text-sm leading-7 text-white/75">
-              Find the room that speaks to your story. You do not have to carry this alone.
+              You’re not the only one going through this. Step into a room
+              where people understand.
             </p>
           </div>
         </div>
 
-        {/* QUICK ACTION */}
+        {/* QUICK ACTIONS */}
         <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
           <p className="text-center text-sm font-semibold text-[#D4AF37]">
             Start Exploring
@@ -118,17 +129,19 @@ export default function SpacesPage() {
 
             <Link
               href="/recovery-log"
-              className="flex h-12 w-full items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-sm font-semibold text-white"
+              className="flex h-12 w-full items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-sm font-semibold text-white transition hover:border-[#D4AF37]/30"
             >
               Open Recovery Log
             </Link>
           </div>
         </div>
 
-        {/* PREMADE ROOMS */}
+        {/* ACTIVE ROOMS */}
         <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
-          <p className="text-sm font-semibold text-[#D4AF37]">
-            Featured Rooms
+          <p className="text-sm font-semibold text-[#D4AF37]">Active Rooms</p>
+
+          <p className="mt-2 text-xs text-white/60">
+            People are already inside these spaces.
           </p>
 
           <div className="mt-4 flex flex-col gap-3">
@@ -136,15 +149,20 @@ export default function SpacesPage() {
               <Link
                 key={space.slug}
                 href={`/spaces/${space.slug}`}
-                className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 transition hover:border-[#D4AF37]/30"
+                className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 transition hover:border-[#D4AF37]/40 hover:bg-black/50"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h2 className="text-sm font-semibold text-white">
                       {space.title}
                     </h2>
+
                     <p className="mt-2 text-sm leading-6 text-white/70">
                       {space.description}
+                    </p>
+
+                    <p className="mt-2 text-[11px] text-white/40">
+                      12 people active • New posts today
                     </p>
                   </div>
 
@@ -157,7 +175,7 @@ export default function SpacesPage() {
           </div>
         </div>
 
-        {/* SUPPORT */}
+        {/* SUPPORT NOW */}
         <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
           <p className="text-sm font-semibold text-[#D4AF37]">
             Support Right Now
@@ -172,6 +190,7 @@ export default function SpacesPage() {
                 <h3 className="text-sm font-semibold text-white">
                   {item.title}
                 </h3>
+
                 <p className="mt-2 text-sm leading-6 text-white/70">
                   {item.description}
                 </p>
@@ -180,14 +199,15 @@ export default function SpacesPage() {
           </div>
         </div>
 
-        {/* CUSTOM ROOM */}
+        {/* PRIVATE ROOM */}
         <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
           <p className="text-sm font-semibold text-[#D4AF37]">
             Create Your Own Private Room
           </p>
 
           <p className="mt-3 text-sm leading-7 text-white/75">
-            Need a smaller space with more privacy? Create a room around your story, your circle, or your mission.
+            Need a smaller space with more privacy? Create a room around your
+            story, your circle, or your mission.
           </p>
 
           <button className="mt-4 flex h-12 w-full items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-sm font-semibold text-white">
