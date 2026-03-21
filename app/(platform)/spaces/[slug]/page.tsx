@@ -75,6 +75,18 @@ function formatTitleFromSlug(slug: string) {
     .join(" ");
 }
 
+function formatDateTime(dateString: string) {
+  const date = new Date(dateString);
+
+  return {
+    time: date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    }),
+    date: date.toLocaleDateString(),
+  };
+}
+
 export default function SpaceRoomPage() {
   const params = useParams();
   const slug =
@@ -97,7 +109,8 @@ export default function SpaceRoomPage() {
       ROOM_CONFIG[slug] ?? {
         title: formatTitleFromSlug(slug),
         tag: "Room",
-        description: "A place to connect, post, and talk with people who understand.",
+        description:
+          "A place to connect, post, and talk with people who understand.",
       }
     );
   }, [slug]);
@@ -106,6 +119,22 @@ export default function SpaceRoomPage() {
   const [posts, setPosts] = useState<RoomPost[]>([]);
   const [message, setMessage] = useState("");
   const [isReady, setIsReady] = useState(false);
+  const [profileName, setProfileName] = useState("You");
+
+  useEffect(() => {
+    try {
+      const savedProfile =
+        localStorage.getItem("war-profile-name") ||
+        localStorage.getItem("profileName") ||
+        localStorage.getItem("war_display_name");
+
+      if (savedProfile && savedProfile.trim()) {
+        setProfileName(savedProfile.trim());
+      }
+    } catch {
+      setProfileName("You");
+    }
+  }, []);
 
   useEffect(() => {
     if (!slug) return;
@@ -146,7 +175,7 @@ export default function SpaceRoomPage() {
     const newPost: RoomPost = {
       id: `${Date.now()}`,
       content: clean,
-      author: "You",
+      author: profileName,
       createdAt: new Date().toISOString(),
     };
 
@@ -225,25 +254,37 @@ export default function SpaceRoomPage() {
                 No posts yet.
               </div>
             ) : (
-              posts.map((post) => (
-                <div
-                  key={post.id}
-                  className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-white">
-                      {post.author}
-                    </p>
-                    <p className="text-[11px] text-white/40">
-                      {new Date(post.createdAt).toLocaleString()}
+              posts.map((post) => {
+                const formatted = formatDateTime(post.createdAt);
+
+                return (
+                  <div
+                    key={post.id}
+                    className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-white">
+                          {post.author}
+                        </p>
+                      </div>
+
+                      <div className="shrink-0 text-right">
+                        <p className="text-[11px] leading-4 text-white/40">
+                          {formatted.time}
+                        </p>
+                        <p className="mt-1 text-[11px] leading-4 text-white/40">
+                          {formatted.date}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="mt-3 text-sm leading-6 text-white/80">
+                      {post.content}
                     </p>
                   </div>
-
-                  <p className="mt-3 text-sm leading-6 text-white/80">
-                    {post.content}
-                  </p>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </section>
