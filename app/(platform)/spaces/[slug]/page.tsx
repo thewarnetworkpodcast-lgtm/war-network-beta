@@ -126,7 +126,8 @@ export default function SpaceRoomPage() {
       const savedProfile =
         localStorage.getItem("war-profile-name") ||
         localStorage.getItem("profileName") ||
-        localStorage.getItem("war_display_name");
+        localStorage.getItem("war_display_name") ||
+        localStorage.getItem("war_username");
 
       if (savedProfile && savedProfile.trim()) {
         setProfileName(savedProfile.trim());
@@ -175,7 +176,7 @@ export default function SpaceRoomPage() {
     const newPost: RoomPost = {
       id: `${Date.now()}`,
       content: clean,
-      author: profileName,
+      author: profileName || "You",
       createdAt: new Date().toISOString(),
     };
 
@@ -265,7 +266,7 @@ export default function SpaceRoomPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-white">
-                          {post.author}
+                          {post.author || "Anonymous"}
                         </p>
                       </div>
 
@@ -273,13 +274,13 @@ export default function SpaceRoomPage() {
                         <p className="text-[11px] leading-4 text-white/40">
                           {formatted.time}
                         </p>
-                        <p className="mt-1 text-[11px] leading-4 text-white/40">
+                        <p className="mt-1 text-[10px] leading-4 text-white/30">
                           {formatted.date}
                         </p>
                       </div>
                     </div>
 
-                    <p className="mt-3 text-sm leading-6 text-white/80">
+                    <p className="mt-3 text-sm leading-6 text-white/85">
                       {post.content}
                     </p>
                   </div>
