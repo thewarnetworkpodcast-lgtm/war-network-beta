@@ -74,10 +74,10 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* CLEANED CARD */}
+        {/* FIXED TEXT CARD */}
         <div className="w-full rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-6 text-center">
           <p className="text-sm text-white/70">
-            Build. Heal. Move forward.
+            W.A.R. Network is a home for people rebuilding through trauma.
           </p>
         </div>
 
