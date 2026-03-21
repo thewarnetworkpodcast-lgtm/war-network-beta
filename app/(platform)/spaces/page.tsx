@@ -78,15 +78,10 @@ export default function HomePage() {
             What This Is
           </p>
 
-          <div className="mt-4 flex justify-center">
-            <p className="text-center text-sm leading-7 text-white/75">
-              W.A.R. Network is a home for people rebuilding
-              <br />
-              through trauma, recovery, discipline,
-              <br />
-              and honest community.
-            </p>
-          </div>
+          <p className="mt-4 text-sm leading-7 text-white/75">
+            W.A.R. Network is a home for people rebuilding through trauma,
+            recovery, discipline, and honest community.
+          </p>
         </div>
       </div>
     </main>
