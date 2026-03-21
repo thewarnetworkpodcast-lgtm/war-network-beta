@@ -18,14 +18,12 @@ export default function HomePage() {
               W.A.R. NETWORK
             </p>
 
-            <h1 className="mt-3 w-full text-center text-2xl font-semibold leading-tight text-white">
+            <h1 className="mt-3 text-2xl font-semibold leading-tight text-white">
               Welcome Home
             </h1>
 
-            <p className="mt-4 text-center text-sm leading-7 text-white/75">
-              A place to rebuild, connect, speak honestly,
-              <br />
-              and keep moving forward together.
+            <p className="mt-4 max-w-[280px] text-center text-sm leading-7 text-white/75">
+              A place to rebuild, connect, speak honestly, and keep moving forward together.
             </p>
           </div>
         </div>
