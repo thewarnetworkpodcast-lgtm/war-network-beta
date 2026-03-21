@@ -1,55 +1,71 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
-export default function HomePage() {
-  return (
-    <main className="min-h-screen bg-black px-4 pb-24 pt-16 text-white">
-      <div className="mx-auto flex w-full max-w-md flex-col items-center text-center">
+export default function ProfilePage() {
+  const [name, setName] = useState("Your Name");
+  const [bio, setBio] = useState(
+    "This is your space. Build your identity. Share your story."
+  );
 
-        {/* LOGO */}
-        <img
-          src="/fracturelight.png"
-          alt="Fracturelight"
-          className="h-36 w-36 object-contain mb-6"
-        />
+  useEffect(() => {
+    const savedName = localStorage.getItem("war-user-name");
+    const savedBio = localStorage.getItem("war-user-bio");
 
-        {/* BRAND */}
-        <p className="text-[11px] uppercase tracking-[0.25em] text-[#D4AF37]">
-          W.A.R. NETWORK
-        </p>
+    if (savedName) setName(savedName);
+    if (savedBio) setBio(savedBio);
+  }, []);
 
-        {/* HEADLINE */}
-        <h1 className="mt-4 text-3xl font-bold">
-          Welcome Home
-        </h1>
+  return (
+    <main className="min-h-screen bg-black px-4 pb-24 pt-8 text-white">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-6">
 
-        {/* SUBTEXT */}
-        <p className="mt-3 text-sm text-white/70 leading-relaxed">
-          This is your space to rebuild, connect, and move forward.
-          You don’t have to do it alone.
-        </p>
+        {/* PROFILE CARD */}
+        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-6">
+          <div className="flex flex-col items-center text-center">
 
-        {/* BUTTONS */}
-        <div className="mt-8 flex w-full flex-col gap-3">
+            {/* PROFILE IMAGE */}
+            <img
+              src="/fracturelight.png"
+              alt="Profile"
+              className="h-28 w-28 rounded-full object-cover border border-[#D4AF37]/30"
+            />
 
-          <Link
-            href="/feed"
-            className="rounded-xl bg-[#D4AF37] py-3 text-black font-semibold"
-          >
-            Enter Community
-          </Link>
+            {/* NAME */}
+            <h1 className="mt-4 text-2xl font-semibold">
+              {name}
+            </h1>
 
-          <Link
-            href="/spaces"
-            className="rounded-xl border border-[#D4AF37]/30 py-3 text-[#D4AF37]"
-          >
-            Explore Spaces
-          </Link>
+            {/* BIO */}
+            <p className="mt-2 text-sm text-white/70">
+              {bio}
+            </p>
 
-        </div>
+            {/* FRIEND COUNT (placeholder for now) */}
+            <p className="mt-3 text-sm text-[#D4AF37]">
+              0 Friends
+            </p>
 
-      </div>
-    </main>
-  );
+            {/* EDIT BUTTON */}
+            <Link
+              href="/profile/edit"
+              className="mt-5 rounded-xl border border-[#D4AF37]/30 px-5 py-2 text-sm text-[#D4AF37]"
+            >
+              Edit Profile
+            </Link>
+
+          </div>
+        </div>
+
+        {/* FUTURE AREA */}
+        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-5">
+          <p className="text-center text-sm text-white/70">
+            Your activity and posts will appear here.
+          </p>
+        </div>
+
+      </div>
+    </main>
+  );
 }
