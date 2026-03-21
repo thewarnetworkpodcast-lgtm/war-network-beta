@@ -2,10 +2,26 @@
 
 function FracturelightSymbol() {
   return (
-    <div className="relative h-24 w-24">
-      <div className="absolute inset-0 rounded-full border-[3px] border-[#D4AF37]" />
-      <div className="absolute left-1/2 top-[10%] h-[80%] w-[3px] -translate-x-1/2 rounded-full bg-[#D4AF37]" />
-    </div>
+    <svg
+      width="120"
+      height="120"
+      viewBox="0 0 120 120"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="Fracturelight symbol"
+      className="h-28 w-28"
+    >
+      <circle cx="60" cy="60" r="34" stroke="#D4AF37" strokeWidth="4" />
+      <line
+        x1="60"
+        y1="22"
+        x2="60"
+        y2="98"
+        stroke="#D4AF37"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 
@@ -15,26 +31,25 @@ export default function ProfilePage() {
       <div className="mx-auto flex w-full max-w-md flex-col gap-5">
         <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-6">
           <div className="flex flex-col items-center text-center">
-            <div className="mb-5 flex items-center justify-center">
+            <div className="mb-4 flex items-center justify-center">
               <FracturelightSymbol />
             </div>
 
-            <p className="text-[11px] uppercase tracking-[0.28em] text-[#D4AF37]">
-              W.A.R. Network Alpha
+            <p className="text-[11px] uppercase tracking-[0.24em] text-[#D4AF37]">
+              W.A.R. NETWORK ALPHA
             </p>
 
-            <div className="mt-5 flex w-full items-center justify-center rounded-2xl border border-[#D4AF37]/20 bg-black/40 px-4 py-4 text-center">
-              <span className="whitespace-nowrap text-xl font-semibold text-[#D4AF37]">
+            <div className="mt-5 w-full rounded-2xl border border-[#D4AF37]/20 bg-black/40 px-4 py-4">
+              <p className="text-center text-xl font-semibold text-[#D4AF37]">
                 Launch Mode Active
-              </span>
+              </p>
             </div>
           </div>
         </div>
 
         <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] p-6">
-          <p className="mx-auto max-w-[28rem] text-center text-[18px] leading-8 text-white/90">
-            Founding Member access is live. Full profile customization is being
-            finalized for the public rollout.
+          <p className="text-center text-lg leading-8 text-white/90">
+            Founding Member access is live. Full profile customization is being finalized for the public rollout.
           </p>
         </div>
 
