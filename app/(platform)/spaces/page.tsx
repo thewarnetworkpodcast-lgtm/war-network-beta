@@ -13,57 +13,49 @@ const featuredSpaces: SpaceCard[] = [
   {
     title: "Combat Veterans",
     slug: "combat-veterans",
-    description:
-      "Talk with others who understand military trauma, transition, identity, and recovery.",
+    description: "Talk with others who understand military trauma, transition, identity, and recovery.",
     tag: "Service",
   },
   {
     title: "PTSD & Trauma",
     slug: "ptsd-trauma",
-    description:
-      "For those navigating flashbacks, anxiety, triggers, nightmares, and the work of healing.",
+    description: "For flashbacks, anxiety, triggers, nightmares, and the work of healing.",
     tag: "Healing",
   },
   {
     title: "Addiction Recovery",
     slug: "addiction-recovery",
-    description:
-      "A room for honesty, accountability, relapse prevention, and rebuilding one day at a time.",
+    description: "A room for honesty, accountability, relapse prevention, and rebuilding one day at a time.",
     tag: "Recovery",
   },
   {
     title: "Grief & Loss",
     slug: "grief-loss",
-    description:
-      "For anyone carrying loss, mourning change, or trying to breathe through heartbreak.",
+    description: "For anyone carrying loss, mourning change, or trying to breathe through heartbreak.",
     tag: "Support",
   },
   {
     title: "Autism Parents",
     slug: "autism-parents",
-    description:
-      "Support, share, and connect with parents carrying the beautiful weight of that journey.",
+    description: "Support, share, and connect with parents carrying the beautiful weight of that journey.",
     tag: "Family",
   },
   {
     title: "Childhood Trauma",
     slug: "childhood-trauma",
-    description:
-      "For those healing from early pain, survival patterns, and the long shadow of what happened young.",
+    description: "For those healing from early pain, survival patterns, and the long shadow of what happened young.",
     tag: "Inner Work",
   },
   {
     title: "Incarceration & Reentry",
     slug: "incarceration-reentry",
-    description:
-      "A place for rebuilding after prison, reclaiming identity, and creating a new path.",
+    description: "A place for rebuilding after prison, reclaiming identity, and creating a new path.",
     tag: "Rebuild",
   },
   {
     title: "Founding Members",
     slug: "founding-members",
-    description:
-      "For the early builders helping shape the culture, direction, and heartbeat of W.A.R. Network.",
+    description: "For the early builders helping shape the culture, direction, and heartbeat of W.A.R. Network.",
     tag: "Alpha",
   },
 ];
@@ -75,48 +67,87 @@ const supportLinks = [
   },
   {
     title: "Veterans Crisis Line",
-    description:
-      "Veterans can call 988 then press 1, text 838255, or chat online.",
+    description: "Veterans can call 988 then press 1, text 838255, or chat online.",
   },
   {
     title: "Grounding Reset",
-    description:
-      "Breathe in for 4, hold for 4, out for 6. Repeat until your body slows down.",
+    description: "Breathe in for 4, hold for 4, out for 6. Repeat until your body slows down.",
   },
 ];
 
 export default function SpacesPage() {
   return (
-    <main className="min-h-screen bg-black px-4 pb-24 pt-8 text-white">
-      <div className="mx-auto flex w-full max-w-md flex-col gap-5">
+    <main className="min-h-screen bg-black px-4 pb-24 pt-6 text-white">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-4">
         {/* HERO */}
-        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-7">
+        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
           <div className="flex flex-col items-center text-center">
             <img
               src="/fracturelight.png"
               alt="Fracturelight"
-              className="h-14 w-14 object-contain mix-blend-screen"
+              className="h-10 w-10 object-contain mix-blend-screen"
             />
 
-            <p className="mt-4 text-[11px] uppercase tracking-[0.22em] text-[#D4AF37]">
+            <p className="mt-3 text-[11px] uppercase tracking-[0.22em] text-[#D4AF37]">
               W.A.R. SPACES
             </p>
 
-            <h1 className="mt-3 text-2xl font-semibold text-white">
+            <h1 className="mt-2 text-xl font-semibold text-white">
               Explore Rooms
             </h1>
 
-            <p className="mt-3 max-w-[280px] text-sm leading-7 text-white/75">
-              You’re not the only one going through this. Step into a room
-              where people understand.
+            <p className="mt-2 max-w-[280px] text-sm leading-6 text-white/75">
+              You’re not the only one going through this. Step into a room where people understand.
             </p>
+          </div>
+        </div>
+
+        {/* ACTIVE ROOMS FIRST */}
+        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-4 py-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-[#D4AF37]">
+              Active Rooms
+            </p>
+            <p className="text-[11px] text-white/40">
+              Tap to enter
+            </p>
+          </div>
+
+          <div className="mt-3 flex flex-col gap-3">
+            {featuredSpaces.map((space) => (
+              <Link
+                key={space.slug}
+                href={`/spaces/${space.slug}`}
+                className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 transition hover:border-[#D4AF37]/40 hover:bg-black/50"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="text-sm font-semibold text-white">
+                      {space.title}
+                    </h2>
+
+                    <p className="mt-1 text-sm leading-6 text-white/70">
+                      {space.description}
+                    </p>
+
+                    <p className="mt-2 text-[11px] text-white/40">
+                      12 active • New posts today
+                    </p>
+                  </div>
+
+                  <span className="shrink-0 rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-[#D4AF37]">
+                    {space.tag}
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
 
         {/* QUICK ACTIONS */}
         <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
           <p className="text-center text-sm font-semibold text-[#D4AF37]">
-            Start Exploring
+            Quick Actions
           </p>
 
           <div className="mt-4 flex flex-col gap-3">
@@ -133,45 +164,6 @@ export default function SpacesPage() {
             >
               Open Recovery Log
             </Link>
-          </div>
-        </div>
-
-        {/* ACTIVE ROOMS */}
-        <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
-          <p className="text-sm font-semibold text-[#D4AF37]">Active Rooms</p>
-
-          <p className="mt-2 text-xs text-white/60">
-            People are already inside these spaces.
-          </p>
-
-          <div className="mt-4 flex flex-col gap-3">
-            {featuredSpaces.map((space) => (
-              <Link
-                key={space.slug}
-                href={`/spaces/${space.slug}`}
-                className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 transition hover:border-[#D4AF37]/40 hover:bg-black/50"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="text-sm font-semibold text-white">
-                      {space.title}
-                    </h2>
-
-                    <p className="mt-2 text-sm leading-6 text-white/70">
-                      {space.description}
-                    </p>
-
-                    <p className="mt-2 text-[11px] text-white/40">
-                      12 people active • New posts today
-                    </p>
-                  </div>
-
-                  <span className="shrink-0 rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/10 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-[#D4AF37]">
-                    {space.tag}
-                  </span>
-                </div>
-              </Link>
-            ))}
           </div>
         </div>
 
@@ -206,8 +198,7 @@ export default function SpacesPage() {
           </p>
 
           <p className="mt-3 text-sm leading-7 text-white/75">
-            Need a smaller space with more privacy? Create a room around your
-            story, your circle, or your mission.
+            Need a smaller space with more privacy? Create a room around your story, your circle, or your mission.
           </p>
 
           <button className="mt-4 flex h-12 w-full items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-sm font-semibold text-white">
