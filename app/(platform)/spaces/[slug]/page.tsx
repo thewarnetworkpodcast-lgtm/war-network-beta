@@ -56,7 +56,6 @@ export default function SpaceRoomPage() {
   const [message, setMessage] = useState("");
   const [profileName, setProfileName] = useState("You");
 
-  // LOAD USER NAME
   useEffect(() => {
     const saved =
       localStorage.getItem("war-profile-name") ||
@@ -65,7 +64,6 @@ export default function SpaceRoomPage() {
     if (saved) setProfileName(saved);
   }, []);
 
-  // LOAD POSTS
   useEffect(() => {
     const saved = localStorage.getItem(storageKey);
 
@@ -131,7 +129,7 @@ export default function SpaceRoomPage() {
           </button>
         </div>
 
-        {/* ROOM FEED */}
+        {/* FEED */}
         <div className="rounded-3xl border border-[#D4AF37]/20 bg-[#111] p-5">
           <div className="flex justify-between mb-3">
             <p className="text-[#D4AF37] text-sm font-semibold">
@@ -151,22 +149,27 @@ export default function SpaceRoomPage() {
                   key={post.id}
                   className="rounded-xl border border-white/10 bg-black/40 p-4"
                 >
-                  {/* NAME + TIME */}
-                  <div className="flex justify-between items-center">
+                  {/* TOP ROW */}
+                  <div className="flex justify-between items-start">
+                    
+                    {/* NAME */}
                     <p className="text-sm font-semibold">
                       {post.author}
                     </p>
 
-                    <div className="text-right text-xs text-white/40">
+                    {/* TIME */}
+                    <div className="text-right text-xs text-white/40 leading-tight">
                       <div>{time.time}</div>
                       <div>{time.date}</div>
                     </div>
+
                   </div>
 
                   {/* MESSAGE */}
-                  <p className="mt-3 text-sm text-white/80">
+                  <p className="mt-2 text-sm text-white/80 leading-relaxed">
                     {post.content}
                   </p>
+
                 </div>
               );
             })}
