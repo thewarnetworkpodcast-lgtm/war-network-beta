@@ -1,11 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function EditProfilePage() {
-  const router = useRouter();
-
   const [fullName, setFullName] = useState("");
   const [bio, setBio] = useState("");
   const [saving, setSaving] = useState(false);
@@ -35,8 +32,7 @@ export default function EditProfilePage() {
     localStorage.setItem("war-profile-name", cleanName);
     localStorage.setItem("war-profile-bio", cleanBio);
 
-    setSaving(false);
-    router.push("/profile");
+    window.location.href = "/profile";
   }
 
   return (
