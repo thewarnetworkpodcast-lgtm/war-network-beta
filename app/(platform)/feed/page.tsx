@@ -48,9 +48,8 @@ export default function FeedPage() {
               Welcome Home
             </h1>
 
-            <p className="mt-2 max-w-xs text-sm leading-6 text-white/70">
-              Say something real. This is your space to speak, connect, and
-              rebuild.
+            <p className="mt-3 max-w-sm text-center text-sm leading-6 text-white/75">
+              Say something real. This is your space to speak, connect, and rebuild.
             </p>
           </div>
         </div>
