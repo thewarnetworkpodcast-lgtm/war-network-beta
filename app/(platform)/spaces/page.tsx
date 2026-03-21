@@ -72,17 +72,6 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-
-        <div className="w-full rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
-          <p className="text-sm font-semibold text-[#D4AF37]">
-            What This Is
-          </p>
-
-          <p className="mt-4 text-sm leading-7 text-white/75">
-            W.A.R. Network is a home for people rebuilding through trauma,
-            recovery, discipline, and honest community.
-          </p>
-        </div>
       </div>
     </main>
   );
