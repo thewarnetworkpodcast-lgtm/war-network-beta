@@ -1,94 +1,97 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { supabase } from "./lib/supabaseClient";
 
 export default function HomePage() {
-  return (
-    <main className="min-h-screen bg-black px-4 pb-24 pt-8 text-white">
-      <div className="mx-auto flex w-full max-w-md flex-col gap-4">
-        
-        {/* HEADER CARD */}
-        <div className="w-full rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-8">
-          <div className="flex flex-col items-center text-center">
-            
-            <img
-              src="/fracturelight.png"
-              alt="Fracturelight"
-              className="h-20 w-20 object-contain mix-blend-screen"
-            />
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
-            <p className="mt-4 text-[11px] uppercase tracking-[0.22em] text-[#D4AF37]">
-              W.A.R. NETWORK
-            </p>
+  async function handleSignIn() {
+    const cleanEmail = email.trim();
 
-            <h1 className="mt-3 text-2xl font-semibold text-white">
-              Welcome Home
-            </h1>
+    if (!cleanEmail) {
+      alert("Enter your email");
+      return;
+    }
 
-            <p className="mt-4 max-w-[280px] text-center text-sm leading-7 text-white/75">
-              You’re not alone here.
-            </p>
-          </div>
-        </div>
+    setLoading(true);
 
-        {/* ACTIONS CARD */}
-        <div className="w-full rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
-          <p className="text-center text-sm font-semibold text-[#D4AF37]">
-            Start Here
-          </p>
+    const { error } = await supabase.auth.signInWithOtp({
+      email: cleanEmail,
+    });
 
-          <div className="mt-4 flex flex-col gap-3">
-            
-            <Link
-              href="/feed"
-              className="flex h-12 items-center justify-center rounded-2xl bg-[#D4AF37] text-sm font-semibold text-black"
-            >
-              Enter Community Feed
-            </Link>
+    setLoading(false);
 
-            <Link
-              href="/spaces"
-              className="flex h-12 items-center justify-center rounded-2xl border border-white/10 text-sm font-semibold text-white"
-            >
-              Explore Spaces
-            </Link>
+    if (error) {
+      console.error(error);
+      alert("Could not send sign in link");
+      return;
+    }
 
-            <Link
-              href="/recovery-log"
-              className="flex h-12 items-center justify-center rounded-2xl border border-white/10 text-sm font-semibold text-white"
-            >
-              Recovery Log
-            </Link>
+    alert("Check your email for your sign in link");
+  }
 
-            <Link
-              href="/messages"
-              className="flex h-12 items-center justify-center rounded-2xl border border-white/10 text-sm font-semibold text-white"
-            >
-              Messages
-            </Link>
+  return (
+    <main className="min-h-screen bg-[#0b0b0b] px-6 py-10 text-white">
+      <div className="mx-auto flex min-h-[85vh] w-full max-w-md flex-col items-center justify-center gap-6 text-center">
+        <img
+          src="/fracturelight.png"
+          alt="W.A.R. Network"
+          className="h-20 w-20 object-contain"
+        />
 
-            <Link
-              href="/profile"
-              className="flex h-12 items-center justify-center rounded-2xl border border-white/10 text-sm font-semibold text-white"
-            >
-              Create Profile
-            </Link>
+        <div className="space-y-3">
+          <h1 className="text-3xl font-semibold text-[#D4AF37]">
+            Welcome Home
+          </h1>
 
-          </div>
-        </div>
+          <p className="text-sm leading-7 text-white/70">
+            W.A.R. Network is a place to connect, rebuild, and recover with people
+            who understand the weight you carry.
+          </p>
+        </div>
 
-        {/* WHAT THIS IS CARD */}
-        <div className="w-full rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
-          <p className="text-sm font-semibold text-[#D4AF37]">
-            What This Is
-          </p>
+        <section className="w-full rounded-2xl border border-white/10 bg-black/40 p-6 text-left">
+          <h2 className="mb-3 text-center text-lg font-semibold text-[#D4AF37]">
+            Sign Up or Sign In
+          </h2>
 
-          <p className="mt-3 text-sm leading-6 text-white/75 text-center">
-            W.A.R. Network is a home for people rebuilding through trauma.
-          </p>
-        </div>
+          <p className="mb-4 text-center text-sm text-white/60">
+            Enter your email and we’ll send you a secure login link.
+          </p>
 
-      </div>
-    </main>
-  );
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-white outline-none"
+          />
+
+          <button
+            onClick={handleSignIn}
+            disabled={loading}
+            className="mt-4 w-full rounded-xl bg-[#D4AF37] px-4 py-3 text-sm font-semibold text-black disabled:opacity-60"
+          >
+            {loading ? "Sending Link..." : "Continue"}
+          </button>
+        </section>
+
+        <div className="w-full rounded-2xl border border-white/10 bg-black/40 p-5">
+          <p className="text-sm text-white/65">
+            Already inside the network?
+          </p>
+
+          <Link
+            href="/profile"
+            className="mt-4 block w-full rounded-xl border border-[#D4AF37] px-4 py-3 text-sm font-semibold text-[#D4AF37]"
+          >
+            Enter W.A.R. Network
+          </Link>
+        </div>
+      </div>
+    </main>
+  );
 }
