@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -27,8 +26,6 @@ export default function ProfilePage() {
   );
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
-  const [targetUserId, setTargetUserId] = useState("");
-  const [sendStatus, setSendStatus] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,10 +58,32 @@ export default function ProfilePage() {
         setProfileBio(savedBio.trim());
       }
 
-      await Promise.all([
-        loadFriendRequests(user.id),
-        loadFriends(user.id),
-      ]);
+      const { data: requests, error: requestsError } = await supabase
+        .from("friend_requests")
+        .select("id, sender_id, receiver_id, status, created_at")
+        .eq("receiver_id", user.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+
+      if (requestsError) {
+        console.error("Loading friend requests failed:", requestsError);
+        setFriendRequests([]);
+      } else {
+        setFriendRequests((requests as FriendRequest[]) || []);
+      }
+
+      const { data: friendsData, error: friendsError } = await supabase
+        .from("friends")
+        .select("id, user_id, friend_id, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (friendsError) {
+        console.error("Loading friends failed:", friendsError);
+        setFriends([]);
+      } else {
+        setFriends((friendsData as Friend[]) || []);
+      }
     } catch (error) {
       console.error("Profile page load failed:", error);
     } finally {
@@ -72,342 +91,104 @@ export default function ProfilePage() {
     }
   }
 
-  async function loadFriendRequests(currentUserId: string) {
-    const { data, error } = await supabase
-      .from("friend_requests")
-      .select("id, sender_id, receiver_id, status, created_at")
-      .eq("receiver_id", currentUserId)
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Loading friend requests failed:", error);
-      setFriendRequests([]);
-      return;
-    }
-
-    setFriendRequests((data as FriendRequest[]) || []);
-  }
-
-  async function loadFriends(currentUserId: string) {
-    const { data, error } = await supabase
-      .from("friends")
-      .select("id, user_id, friend_id, created_at")
-      .eq("user_id", currentUserId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Loading friends failed:", error);
-      setFriends([]);
-      return;
-    }
-
-    setFriends((data as Friend[]) || []);
-  }
-
-  async function acceptRequest(request: FriendRequest) {
-    if (!userId) return;
-
-    const { error: updateError } = await supabase
-      .from("friend_requests")
-      .update({ status: "accepted" })
-      .eq("id", request.id);
-
-    if (updateError) {
-      console.error("Accept request failed:", updateError);
-      return;
-    }
-
-    const { error: insertError } = await supabase.from("friends").insert([
-      {
-        user_id: request.sender_id,
-        friend_id: request.receiver_id,
-      },
-      {
-        user_id: request.receiver_id,
-        friend_id: request.sender_id,
-      },
-    ]);
-
-    if (insertError) {
-      console.error("Creating friendship failed:", insertError);
-      return;
-    }
-
-    await Promise.all([
-      loadFriendRequests(userId),
-      loadFriends(userId),
-    ]);
-  }
-
-  async function declineRequest(requestId: string) {
-    if (!userId) return;
-
-    const { error } = await supabase
-      .from("friend_requests")
-      .update({ status: "declined" })
-      .eq("id", requestId);
-
-    if (error) {
-      console.error("Decline request failed:", error);
-      return;
-    }
-
-    await loadFriendRequests(userId);
-  }
-
-  async function copyMemberId() {
-    if (!userId) return;
-
-    try {
-      await navigator.clipboard.writeText(userId);
-      setSendStatus("Member ID copied.");
-      setTimeout(() => setSendStatus(""), 2000);
-    } catch (error) {
-      console.error("Copy failed:", error);
-      setSendStatus("Could not copy Member ID.");
-      setTimeout(() => setSendStatus(""), 2000);
-    }
-  }
-
-  async function sendFriendRequest() {
-    const cleanTarget = targetUserId.trim();
-
-    if (!userId) {
-      setSendStatus("You must be signed in.");
-      return;
-    }
-
-    if (!cleanTarget) {
-      setSendStatus("Enter a Member ID.");
-      return;
-    }
-
-    if (cleanTarget === userId) {
-      setSendStatus("You cannot add yourself.");
-      return;
-    }
-
-    const alreadyFriend = friends.some(
-      (friend) => friend.friend_id === cleanTarget
-    );
-
-    if (alreadyFriend) {
-      setSendStatus("You are already friends.");
-      return;
-    }
-
-    const { data: existingRequest, error: existingError } = await supabase
-      .from("friend_requests")
-      .select("id")
-      .or(
-        `and(sender_id.eq.${userId},receiver_id.eq.${cleanTarget}),and(sender_id.eq.${cleanTarget},receiver_id.eq.${userId})`
-      )
-      .limit(1);
-
-    if (existingError) {
-      console.error("Checking request failed:", existingError);
-      setSendStatus("Could not send request.");
-      return;
-    }
-
-    if (existingRequest && existingRequest.length > 0) {
-      setSendStatus("A request already exists.");
-      return;
-    }
-
-    const { error } = await supabase.from("friend_requests").insert([
-      {
-        sender_id: userId,
-        receiver_id: cleanTarget,
-        status: "pending",
-      },
-    ]);
-
-    if (error) {
-      console.error("Send request failed:", error);
-      setSendStatus("Could not send request.");
-      return;
-    }
-
-    setTargetUserId("");
-    setSendStatus("Friend request sent.");
-    setTimeout(() => setSendStatus(""), 2500);
-  }
-
   return (
-    <main className="min-h-screen bg-black px-4 pb-24 pt-6 text-white">
-      <div className="mx-auto flex w-full max-w-md flex-col gap-4">
-        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-8">
-          <div className="flex flex-col items-center text-center">
+    <main className="min-h-screen bg-[#0b0b0b] px-4 py-10 pb-24 text-white">
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
+        <section className="rounded-2xl border border-white/10 p-6 text-center">
+          <div className="mb-4 flex justify-center">
             <img
               src="/fracturelight.png"
-              alt="Fracturelight"
-              className="h-20 w-20 object-contain mix-blend-screen"
+              alt="W.A.R. Network Fracturelight"
+              className="h-16 w-16 object-contain"
             />
-
-            <h1 className="mt-5 text-3xl font-semibold text-white">
-              {profileName}
-            </h1>
-
-            <p className="mt-3 max-w-[280px] text-sm leading-7 text-white/65">
-              {profileBio}
-            </p>
-
-            <p className="mt-6 text-xl font-medium text-[#D4AF37]">
-              {friends.length} Friends
-            </p>
-
-            <Link
-              href="/profile/edit"
-              className="mt-6 flex h-12 w-full items-center justify-center rounded-2xl border border-[#D4AF37]/35 text-base font-semibold text-[#D4AF37]"
-            >
-              Edit Profile
-            </Link>
           </div>
+
+          <h1 className="mb-2 text-xl font-semibold">{profileName}</h1>
+
+          <p className="mb-4 text-sm leading-7 text-white/60">{profileBio}</p>
+
+          <p className="mb-4 font-semibold text-[#D4AF37]">
+            {friends.length} Friends
+          </p>
+
+          <button className="w-full rounded-xl border border-[#D4AF37] px-4 py-2 text-[#D4AF37]">
+            Edit Profile
+          </button>
         </section>
 
-        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-[#D4AF37]">
-              Your Member ID
-            </h2>
-            <p className="mt-2 break-all text-sm leading-6 text-white/65">
-              {userId || "Loading..."}
-            </p>
-          </div>
+        <section className="rounded-2xl border border-white/10 p-6 text-center">
+          <h2 className="mb-2 font-semibold text-[#D4AF37]">Your Member ID</h2>
 
-          <button
-            onClick={copyMemberId}
-            className="mt-4 flex h-11 w-full items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-sm font-semibold text-white"
-          >
+          <p className="mb-4 break-all text-sm text-white/70">
+            {loading ? "Loading..." : userId}
+          </p>
+
+          <button className="w-full rounded-xl border border-white/20 px-4 py-2 text-white/70">
             Copy Member ID
           </button>
         </section>
 
-        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-[#D4AF37]">
-              Send Friend Request
-            </h2>
-            <p className="mt-1 text-sm text-white/45">
-              Paste another user&apos;s Member ID
-            </p>
-          </div>
-
-          <input
-            value={targetUserId}
-            onChange={(e) => setTargetUserId(e.target.value)}
-            placeholder="Enter Member ID"
-            className="mt-4 h-12 w-full rounded-2xl border border-white/10 bg-black/30 px-4 text-sm text-white outline-none placeholder:text-white/35"
-          />
-
-          <button
-            onClick={sendFriendRequest}
-            className="mt-4 flex h-12 w-full items-center justify-center rounded-2xl bg-[#D4AF37] text-sm font-semibold text-black"
-          >
-            Send Request
-          </button>
-
-          {sendStatus ? (
-            <p className="mt-3 text-center text-sm text-white/65">
-              {sendStatus}
-            </p>
-          ) : null}
-        </section>
-
-        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-[#D4AF37]">
-              Friend Requests
-            </h2>
-            <p className="mt-1 text-sm text-white/45">
+        <section className="rounded-2xl border border-white/10 p-6">
+          <div className="mb-4 text-center">
+            <h2 className="font-semibold text-[#D4AF37]">Friend Requests</h2>
+            <p className="mt-1 text-sm text-white/60">
               {friendRequests.length} pending
             </p>
           </div>
 
-          <div className="mt-4 flex flex-col gap-3">
-            {loading ? (
-              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-center text-sm leading-6 text-white/65">
-                Loading requests...
-              </div>
-            ) : friendRequests.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-center text-sm leading-6 text-white/65">
-                No pending friend requests.
-              </div>
-            ) : (
-              friendRequests.map((request) => (
-                <div
-                  key={request.id}
-                  className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4"
-                >
-                  <p className="text-center text-base font-semibold text-white">
-                    Sender: {request.sender_id.slice(0, 8)}
-                  </p>
+          {friendRequests.length === 0 ? (
+            <div className="rounded-xl border border-white/10 py-3 text-center text-sm text-white/50">
+              No pending friend requests.
+            </div>
+          ) : (
+            friendRequests.map((req) => (
+              <div
+                key={req.id}
+                className="mb-3 rounded-xl border border-white/10 p-3"
+              >
+                <p className="mb-2 break-all text-sm text-white">
+                  {req.sender_id}
+                </p>
 
-                  <p className="mt-2 text-center text-sm leading-6 text-white/60">
-                    Wants to connect with you.
-                  </p>
-
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => acceptRequest(request)}
-                      className="flex h-11 w-full items-center justify-center rounded-2xl bg-[#D4AF37] text-sm font-semibold text-black"
-                    >
-                      Accept
-                    </button>
-
-                    <button
-                      onClick={() => declineRequest(request.id)}
-                      className="flex h-11 w-full items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-sm font-semibold text-white"
-                    >
-                      Decline
-                    </button>
-                  </div>
+                <div className="flex gap-2">
+                  <button className="rounded-lg bg-[#D4AF37] px-3 py-1 text-sm text-black">
+                    Accept
+                  </button>
+                  <button className="rounded-lg border border-white/20 px-3 py-1 text-sm text-white/70">
+                    Decline
+                  </button>
                 </div>
-              ))
-            )}
-          </div>
+              </div>
+            ))
+          )}
         </section>
 
-        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-[#D4AF37]">
-              Friends List
-            </h2>
-            <p className="mt-1 text-sm text-white/45">
-              {friends.length} total
-            </p>
+        <section className="rounded-2xl border border-white/10 p-6">
+          <div className="mb-4 text-center">
+            <h2 className="font-semibold text-[#D4AF37]">Friends List</h2>
+            <p className="mt-1 text-sm text-white/60">{friends.length} total</p>
           </div>
 
-          <div className="mt-4 flex flex-col gap-3">
-            {loading ? (
-              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-center text-sm leading-6 text-white/65">
-                Loading friends...
+          {friends.length === 0 ? (
+            <div className="rounded-xl border border-white/10 py-3 text-center text-sm text-white/50">
+              No friends added yet.
+            </div>
+          ) : (
+            friends.map((friend) => (
+              <div
+                key={friend.id}
+                className="mb-2 rounded-xl border border-white/10 p-3"
+              >
+                <p className="break-all text-sm text-white">
+                  {friend.friend_id === userId ? friend.user_id : friend.friend_id}
+                </p>
               </div>
-            ) : friends.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-center text-sm leading-6 text-white/65">
-                No friends added yet.
-              </div>
-            ) : (
-              friends.map((friend) => (
-                <div
-                  key={friend.id}
-                  className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4"
-                >
-                  <p className="text-center text-base font-semibold text-white">
-                    Friend: {friend.friend_id.slice(0, 8)}
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
+            ))
+          )}
         </section>
 
-        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
-          <p className="text-center text-sm leading-6 text-white/60">
-            Your activity and posts will appear here.
-          </p>
+        <section className="rounded-2xl border border-white/10 p-6 text-center text-sm text-white/50">
+          Your activity and posts will appear here.
         </section>
       </div>
     </main>
