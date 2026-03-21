@@ -19,6 +19,15 @@ const PROFILE_BIO_KEY = "war-profile-bio";
 const FRIEND_REQUESTS_KEY = "war-friend-requests";
 const FRIENDS_KEY = "war-friends";
 
+function normalizeName(value: string) {
+  return value.trim().toLowerCase();
+}
+
+function isOldSeedName(name: string) {
+  const normalized = normalizeName(name);
+  return normalized === "kevin" || normalized === "bradley";
+}
+
 export default function ProfilePage() {
   const [profileName, setProfileName] = useState("Your Name");
   const [profileBio, setProfileBio] = useState(
@@ -35,42 +44,35 @@ export default function ProfilePage() {
       const savedFriends = localStorage.getItem(FRIENDS_KEY);
 
       if (savedName && savedName.trim()) {
-        setProfileName(savedName);
+        setProfileName(savedName.trim());
       }
 
       if (savedBio && savedBio.trim()) {
-        setProfileBio(savedBio);
+        setProfileBio(savedBio.trim());
       }
 
       if (savedRequests) {
-        setFriendRequests(JSON.parse(savedRequests));
-      } else {
-        const starterRequests: FriendRequest[] = [
-          {
-            id: "req-1",
-            name: "Marcus",
-            message: "Respect your mission. Let’s connect.",
-          },
-          {
-            id: "req-2",
-            name: "Alicia",
-            message: "Would love to build with this community.",
-          },
-        ];
-
-        setFriendRequests(starterRequests);
-        localStorage.setItem(
-          FRIEND_REQUESTS_KEY,
-          JSON.stringify(starterRequests)
+        const parsedRequests: FriendRequest[] = JSON.parse(savedRequests);
+        const cleanedRequests = parsedRequests.filter(
+          (request) => !isOldSeedName(request.name)
         );
+        setFriendRequests(cleanedRequests);
+        localStorage.setItem(FRIEND_REQUESTS_KEY, JSON.stringify(cleanedRequests));
+      } else {
+        setFriendRequests([]);
+        localStorage.setItem(FRIEND_REQUESTS_KEY, JSON.stringify([]));
       }
 
       if (savedFriends) {
-        setFriends(JSON.parse(savedFriends));
+        const parsedFriends: Friend[] = JSON.parse(savedFriends);
+        const cleanedFriends = parsedFriends.filter(
+          (friend) => !isOldSeedName(friend.name)
+        );
+        setFriends(cleanedFriends);
+        localStorage.setItem(FRIENDS_KEY, JSON.stringify(cleanedFriends));
       } else {
-        const starterFriends: Friend[] = [];
-        setFriends(starterFriends);
-        localStorage.setItem(FRIENDS_KEY, JSON.stringify(starterFriends));
+        setFriends([]);
+        localStorage.setItem(FRIENDS_KEY, JSON.stringify([]));
       }
     } catch {
       setFriendRequests([]);
@@ -90,7 +92,11 @@ export default function ProfilePage() {
 
   function handleAcceptRequest(request: FriendRequest) {
     const nextRequests = friendRequests.filter((item) => item.id !== request.id);
-    const nextFriends = [...friends, { id: request.id, name: request.name }];
+    const alreadyFriend = friends.some((friend) => friend.id === request.id);
+
+    const nextFriends = alreadyFriend
+      ? friends
+      : [...friends, { id: request.id, name: request.name }];
 
     persistRequests(nextRequests);
     persistFriends(nextFriends);
@@ -108,48 +114,46 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-black px-4 pb-24 pt-6 text-white">
       <div className="mx-auto flex w-full max-w-md flex-col gap-4">
-        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-8">
+        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-8">
           <div className="flex flex-col items-center text-center">
             <img
               src="/fracturelight.png"
               alt="Fracturelight"
-              className="h-28 w-28 object-contain mix-blend-screen"
+              className="h-20 w-20 object-contain mix-blend-screen"
             />
 
-            <h1 className="mt-6 text-4xl font-semibold text-white">
+            <h1 className="mt-5 text-3xl font-semibold text-white">
               {profileName}
             </h1>
 
-            <p className="mt-4 max-w-[280px] text-base leading-8 text-white/65">
+            <p className="mt-3 max-w-[280px] text-sm leading-7 text-white/65">
               {profileBio}
             </p>
 
-            <p className="mt-8 text-2xl font-medium text-[#D4AF37]">
+            <p className="mt-6 text-xl font-medium text-[#D4AF37]">
               {friendCountText}
             </p>
 
             <Link
               href="/profile/edit"
-              className="mt-8 flex h-14 w-full max-w-[260px] items-center justify-center rounded-2xl border border-[#D4AF37]/35 text-xl font-medium text-[#D4AF37]"
+              className="mt-6 flex h-12 w-full items-center justify-center rounded-2xl border border-[#D4AF37]/35 text-base font-semibold text-[#D4AF37]"
             >
               Edit Profile
             </Link>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
+        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[#D4AF37]">
+            <h2 className="text-base font-semibold text-[#D4AF37]">
               Friend Requests
             </h2>
-            <p className="text-sm text-white/45">
-              {friendRequests.length} pending
-            </p>
+            <p className="text-sm text-white/45">{friendRequests.length} pending</p>
           </div>
 
           <div className="mt-4 flex flex-col gap-3">
             {friendRequests.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-sm text-white/65">
+              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-sm leading-6 text-white/65">
                 No pending friend requests.
               </div>
             ) : (
@@ -166,17 +170,17 @@ export default function ProfilePage() {
                     {request.message}
                   </p>
 
-                  <div className="mt-4 flex gap-3">
+                  <div className="mt-4 grid grid-cols-2 gap-3">
                     <button
                       onClick={() => handleAcceptRequest(request)}
-                      className="flex h-11 flex-1 items-center justify-center rounded-2xl bg-[#D4AF37] text-sm font-semibold text-black"
+                      className="flex h-11 w-full items-center justify-center rounded-2xl bg-[#D4AF37] text-sm font-semibold text-black"
                     >
                       Accept
                     </button>
 
                     <button
                       onClick={() => handleDeclineRequest(request.id)}
-                      className="flex h-11 flex-1 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-sm font-semibold text-white"
+                      className="flex h-11 w-full items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-sm font-semibold text-white"
                     >
                       Decline
                     </button>
@@ -187,15 +191,17 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-5 py-5">
+        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[#D4AF37]">Friends List</h2>
+            <h2 className="text-base font-semibold text-[#D4AF37]">
+              Friends List
+            </h2>
             <p className="text-sm text-white/45">{friends.length} total</p>
           </div>
 
           <div className="mt-4 flex flex-col gap-3">
             {friends.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-sm text-white/65">
+              <div className="rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-sm leading-6 text-white/65">
                 No friends added yet.
               </div>
             ) : (
@@ -211,6 +217,12 @@ export default function ProfilePage() {
               ))
             )}
           </div>
+        </section>
+
+        <section className="rounded-3xl border border-[#D4AF37]/20 bg-[#111111] px-6 py-5">
+          <p className="text-sm leading-6 text-white/60">
+            Your activity and posts will appear here.
+          </p>
         </section>
       </div>
     </main>
